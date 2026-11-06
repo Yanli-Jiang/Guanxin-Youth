@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青禾营地 · 课消管理系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="window.XLSX=null"></script>
+<style>
+:root{
+  --paper:#F5EFE1; --paper2:#EFE6D2; --card:#FBF7EC; --card2:#FFFDF6;
+  --ink:#2C3A2E; --ink2:#5C6B5E; --line:#E0D5BC; --line2:#D4C6A8;
+  --pine:#1E5B43; --pine2:#163F2F; --pine3:#2E7D5B;
+  --ember:#E8642F; --ember2:#C94F1F; --sun:#F2B63D; --sunbg:#FDF3DC;
+  --sky:#6FA8BE; --red:#C8442C; --redbg:#FBE9E2;
+  --ok:#2E8B57;
+  --shadow:0 10px 30px rgba(38,52,30,.10), 0 2px 6px rgba(38,52,30,.06);
+  --radius:16px;
+  --disp:'ZCOOL KuaiLe','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --body:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--body); color:var(--ink); background:var(--paper);
+  background-image:
+    radial-gradient(1200px 500px at 85% -10%, rgba(242,182,61,.16), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(46,125,91,.10), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.16 0 0 0 0 0.12 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  font-size:14px;
+}
+::selection{background:var(--sun); color:var(--pine2)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#C9BBA0;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 布局 ============ */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:232px;flex:0 0 232px;background:linear-gradient(168deg,var(--pine) 0%,var(--pine2) 78%);
+  color:#EDF3E8;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+  box-shadow:6px 0 24px rgba(20,45,35,.25);z-index:50;
+}
+.brand{padding:26px 20px 18px;border-bottom:1px dashed rgba(255,255,255,.22)}
+.brand .logo{display:flex;align-items:center;gap:10px}
+.brand .logo .badge{width:44px;height:44px;border-radius:14px;background:var(--ember);display:grid;place-items:center;font-size:24px;box-shadow:0 4px 12px rgba(232,100,47,.45);transform:rotate(-6deg)}
+.brand h1{font-family:var(--disp);font-size:21px;letter-spacing:1px;color:#FFF7E6;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.brand p{font-size:11px;color:#BFD3C4;margin-top:3px;letter-spacing:2px}
+.nav{padding:16px 12px;flex:1;overflow:auto}
+.nav .group{font-size:11px;letter-spacing:3px;color:#9DBBA9;padding:14px 10px 6px}
+.nav a{
+  display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;color:#DCE9DE;
+  text-decoration:none;font-weight:500;margin-bottom:3px;cursor:pointer;font-size:14px;
+  transition:all .18s;position:relative;
+}
+.nav a .ico{width:22px;text-align:center;font-size:16px}
+.nav a:hover{background:rgba(255,255,255,.10);transform:translateX(3px)}
+.nav a.on{background:#FBF7EC;color:var(--pine2);font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.nav a.on::after{content:"";position:absolute;right:10px;top:50%;width:7px;height:7px;border-radius:50%;background:var(--ember);transform:translateY(-50%)}
+.nav .dot{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--ember);color:#fff;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:700}
+.sidebar .foot{padding:14px 18px;border-top:1px dashed rgba(255,255,255,.22);font-size:12px;color:#B9CEBF;line-height:1.7}
+.sidebar .foot b{color:#FFF3D6}
+
+.main{flex:1;min-width:0;padding:26px 34px 60px;max-width:1460px;margin:0 auto;width:100%}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.topbar .crumb{font-size:12px;color:var(--ink2);letter-spacing:1px}
+.topbar h2{font-family:var(--disp);font-size:30px;color:var(--pine2);margin-top:2px;letter-spacing:1px}
+.topbar .datechip{font-size:13px;color:var(--ink2);background:var(--card);border:1px dashed var(--line2);padding:7px 14px;border-radius:30px}
+
+/* ============ 卡片/组件 ============ */
+.ticket{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.ticket::before,.ticket::after{
+  content:"";position:absolute;top:50%;width:22px;height:22px;border-radius:50%;
+  background:var(--paper);border:1px solid var(--line);transform:translateY(-50%);z-index:2;
+}
+.ticket::before{left:-12px}
+.ticket::after{right:-12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card .hd{padding:16px 20px;border-bottom:1px dashed var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.card .hd h3{font-family:var(--disp);font-size:17px;color:var(--pine2);letter-spacing:.5px}
+.card .bd{padding:18px 20px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}.sidebar{display:none}}
+
+.kpi{position:relative;padding:20px 20px 18px;overflow:hidden}
+.kpi .lbl{font-size:12.5px;color:var(--ink2);letter-spacing:1px;display:flex;align-items:center;gap:7px}
+.kpi .num{font-family:var(--disp);font-size:32px;color:var(--pine2);margin-top:8px;line-height:1}
+.kpi .num small{font-size:14px;color:var(--ink2);font-family:var(--body)}
+.kpi .sub{font-size:12px;color:var(--ink2);margin-top:9px}
+.kpi .deco{position:absolute;right:-14px;top:-14px;font-size:64px;opacity:.10;transform:rotate(12deg)}
+.kpi.ember .num{color:var(--ember2)} .kpi.sun .num{color:#A96E0A} .kpi.sky .num{color:#2C6E8C}
+
+.btn{
+  display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-family:var(--body);
+  font-weight:700;font-size:13.5px;padding:9px 16px;border-radius:11px;transition:all .16s;
+  background:var(--pine);color:#FFF7E6;box-shadow:0 3px 10px rgba(30,91,67,.25);
+}
+.btn:hover{background:var(--pine3);transform:translateY(-1px)}
+.btn:active{transform:translateY(1px)}
+.btn.ember{background:var(--ember)}
+.btn.ember:hover{background:var(--ember2)}
+.btn.sun{background:var(--sun);color:#7A5200}
+.btn.sun:hover{background:#e0a32c}
+.btn.ghost{background:transparent;color:var(--pine);box-shadow:none;border:1.5px solid var(--pine)}
+.btn.ghost:hover{background:rgba(30,91,67,.08)}
+.btn.red{background:var(--red)}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:9px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.tablewrap{overflow:auto;border-radius:0 0 var(--radius) var(--radius)}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;white-space:nowrap}
+.tbl th{
+  background:var(--paper2);color:var(--pine2);font-weight:700;text-align:left;padding:11px 14px;
+  border-bottom:2px solid var(--line2);position:sticky;top:0;font-size:12.5px;letter-spacing:.5px;
+}
+.tbl td{padding:11px 14px;border-bottom:1px dashed var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{transition:background .12s}
+.tbl tbody tr:hover{background:#FAF4E6}
+.tbl .sum td{background:var(--sunbg);font-weight:700;color:#7A5200;border-top:2px solid var(--sun)}
+.tbl .red td{color:var(--red)}
+
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;line-height:1.5}
+.tag.pine{background:#E3EFE6;color:var(--pine3)}
+.tag.ember{background:var(--redbg);color:var(--red)}
+.tag.sun{background:var(--sunbg);color:#A96E0A}
+.tag.sky{background:#E3F0F5;color:#2C6E8C}
+.tag.gray{background:#EDE9DD;color:var(--ink2)}
+
+.badge-warn{display:inline-flex;align-items:center;gap:4px;background:var(--redbg);color:var(--red);border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:700;animation:blink 2.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
+
+.avatar{width:34px;height:34px;border-radius:11px;display:inline-grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--pine3),var(--pine));flex:0 0 auto}
+
+/* 表单 */
+.frm{display:grid;gap:14px}
+.frow{display:grid;gap:6px}
+.frow label{font-size:12.5px;font-weight:700;color:var(--pine2);letter-spacing:.5px}
+.frow label .req{color:var(--red)}
+input,select,textarea{
+  font-family:var(--body);font-size:14px;color:var(--ink);background:#FFFDF6;
+  border:1.5px solid var(--line2);border-radius:11px;padding:9px 12px;outline:none;width:100%;
+  transition:border .15s, box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--pine3);box-shadow:0 0 0 3px rgba(46,125,91,.15)}
+input[type=date]{min-width:0}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.hint{font-size:11.5px;color:var(--ink2);line-height:1.6}
+.okmsg{font-size:12px;color:var(--ok);font-weight:700}
+.errmsg{font-size:12px;color:var(--red);font-weight:700}
+
+/* 模态 */
+.mask{position:fixed;inset:0;background:rgba(22,45,36,.45);backdrop-filter:blur(3px);z-index:200;display:grid;place-items:center;padding:20px;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card2);border-radius:20px;max-width:720px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);animation:pop .22s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.92) translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.modal.wide{max-width:960px}
+.modal .mhd{padding:18px 22px;border-bottom:1px dashed var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal .mhd h3{font-family:var(--disp);font-size:19px;color:var(--pine2)}
+.modal .mbd{padding:22px;overflow:auto}
+.modal .mft{padding:14px 22px;border-top:1px dashed var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.xbtn{background:none;border:none;font-size:20px;color:var(--ink2);cursor:pointer;width:32px;height:32px;border-radius:9px;line-height:1}
+.xbtn:hover{background:var(--paper2)}
+
+/* 票券课程卡 */
+.lesson-card{display:flex;gap:0;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .18s}
+.lesson-card:hover{transform:translateY(-2px)}
+.lesson-card .datebar{width:86px;flex:0 0 86px;background:linear-gradient(160deg,var(--pine),var(--pine2));color:#F3F9F0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
+.lesson-card .datebar .d{font-family:var(--disp);font-size:30px;line-height:1}
+.lesson-card .datebar .m{font-size:11px;letter-spacing:2px;color:#BFD3C4}
+.lesson-card .datebar .w{font-size:10.5px;background:rgba(255,255,255,.15);padding:1px 8px;border-radius:10px;margin-top:3px}
+.lesson-card .body{flex:1;padding:14px 18px;min-width:0}
+.lesson-card .t{font-weight:700;font-size:15.5px;color:var(--pine2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lesson-card .meta{color:var(--ink2);font-size:12.5px;margin-top:5px;display:flex;gap:14px;flex-wrap:wrap}
+.lesson-card .meta b{color:var(--ink)}
+.lesson-card .inv{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.pbar{height:8px;border-radius:8px;background:#EAE2CE;overflow:hidden;flex:1;min-width:90px}
+.pbar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--pine3),var(--sun));transition:width .5s}
+.progress-label{font-size:12px;color:var(--ink2)}
+.lesson-card .acts{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:12px 14px;border-left:1px dashed var(--line);background:var(--card2)}
+
+/* 印章 */
+.stamp{display:inline-block;border:2.5px solid var(--red);color:var(--red);font-weight:700;font-size:11px;letter-spacing:2px;padding:2px 8px;border-radius:6px;transform:rotate(-8deg);opacity:.85;font-family:var(--disp)}
+.stamp.green{border-color:var(--ok);color:var(--ok)}
+
+/* 列表条目 */
+.li-item{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px dashed var(--line);font-size:13.5px}
+.li-item:last-child{border-bottom:none}
+.li-item .main{flex:1;min-width:0}
+.li-item .sub{font-size:12px;color:var(--ink2);margin-top:2px}
+
+/* 筛选栏 */
+.filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 16px}
+.filterbar input,.filterbar select{width:auto}
+
+/* 进度/加载 */
+.reveal{animation:rise .45s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.blank{text-align:center;color:var(--ink2);padding:46px 10px;font-size:13.5px}
+.blank .big{font-size:40px;margin-bottom:10px}
+.demo-ribbon{position:fixed;left:0;bottom:0;z-index:60;background:var(--sun);color:#7A5200;font-weight:700;font-size:12px;padding:6px 14px;border-radius:0 12px 0 0;box-shadow:0 -2px 10px rgba(0,0,0,.12)}
+.dl{display:flex;justify-content:space-between;gap:12px;padding:11px 2px;border-bottom:1px dashed var(--line);font-size:13.5px;align-items:center}
+.dl:last-child{border-bottom:none}
+.mono{font-variant-numeric:tabular-nums}
+.note{background:var(--sunbg);border:1px dashed var(--sun);border-radius:12px;padding:11px 15px;font-size:12.5px;color:#7A5200;line-height:1.8}
+.note.green{background:#E8F2EA;border-color:#9CC3A6;color:#1F5B39}
+.note.blue{background:#E7F1F5;border-color:#9CC3D0;color:#2C5E70}
+.divider{height:1px;background:var(--line);margin:16px 0;border:none}
+</style>
+</head>
+<body>
+<div class="app" id="appRoot">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <div class="badge">⛺</div>
+        <div><h1 id="brandName">青禾营地</h1><p>COURSE · LEDGER</p></div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">
+      <div>机构：<b id="footOrg">—</b></div>
+      <div>当前用户：<b id="footUser">—</b> <span id="footRole" style="font-size:11px;opacity:.85"></span></div>
+      <button class="btn sm ghost" style="margin-top:8px;border-color:rgba(255,255,255,.4);color:#EDF3E8;box-shadow:none" onclick="logout()">⎋ 退出登录</button>
+      <div style="font-size:11px;opacity:.8;margin-top:8px">数据自动保存在本机浏览器</div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar" id="topbar"></div>
+    <div id="view"></div>
+  </main>
+</div>
+<div id="loginRoot"></div>
+<div id="maskRoot"></div>
+<div id="toastRoot"></div>
+<script>
+"use strict";
+/* ================================================================
+   青禾营地 · 青少年营地课消管理系统（单文件版）
+   数据模型：
+   students  学员档案
+   singles   单品产品
+   combos    组合套餐（items 为子产品拆分，金额为拆分基准）
+   payments  收费流水（含按套餐拆分的 items 快照）
+   refunds   退费申请/流水（审核通过后回滚剩余课时与金额）
+   consumptions 课消记录（考勤自动消课 / 手动补录）
+   classes   排课班次（关联课消单元 unitKey）
+   invites   邀约记录（未邀约→已邀约→已确认→已到课/未到）
+   logs      操作留痕
+   所有金额以「分」为单位存储，避免浮点误差
+   ================================================================ */
+const LS_KEY = "campedu_qinghe_v1";
+let DB = null;
+let CUR = "dash";
+let FILTER = {};   // 各页筛选状态
+let TMP = {};      // 临时编辑对象
+
+/* ---------------- 工具 ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,9);
+const pad = n => String(n).padStart(2,"0");
+const todayStr = () => { const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+const addDays = (s,n) => { const d=new Date(s+"T00:00:00"); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+const fmtDate = s => s ? (s.length===10 ? s.replace(/-/g,".") : s) : "—";
+const weekCN = s => ["周日","周一","周二","周三","周四","周五","周六"][new Date(s+"T00:00:00").getDay()];
+const fmtFen = f => { f=Math.round(Number(f)||0); const neg=f<0; const v=Math.abs(f); const yuan=Math.floor(v/100).toString().replace(/\B(?=(\d{3})+(?!\d))/g,","); return (neg?"-":"")+yuan+"."+pad(v%100); };
+const yuan2fen = v => Math.round((parseFloat(v)||0)*100);
+const fen2yuan = f => (Number(f)||0)/100;
+const nowTxt = () => { const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()); };
+const parseDate = s => { if(!s) return null; const m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); return m?new Date(+m[1],+m[2]-1,+m[3]):null; };
+const todayBetween = (start,end) => { const t=todayStr(); return (!start||t>=start)&&(!end||t<=end); };
+const sum = arr => arr.reduce((a,b)=>a+b,0);
+
+/* ---------------- 登录与角色权限 ---------------- */
+const ROLE_CN={admin:"管理员",principal:"校长",cashier:"财务/收银",teacher:"教务老师"};
+const PERMS={
+  teacher:["student_edit","class_edit","attend","consume","invite","import_students","import_consume"],
+  cashier:["charge","refund_request","import_payments","report_export"],
+  principal:["refund_approve","report_export"],
+  admin:["*"]
+};
+let SESSION=null;
+function can(p){
+  if(!SESSION) return true;                    // 未启用登录时保持全权限（兼容旧数据/测试）
+  const r=PERMS[SESSION.role]||[];
+  return r.includes("*")||r.includes(p);
+}
+function login(username,password){
+  const u=(DB.users||[]).find(x=>x.username===String(username).trim()&&x.password===String(password));
+  if(!u) return false;
+  SESSION={user:u.username,name:u.name,role:u.role,loginAt:nowTxt()};
+  try{ localStorage.setItem(LS_KEY+"_session",JSON.stringify(SESSION)); }catch(e){}
+  log("登录", u.name+"（"+ROLE_CN[u.role]+"）");
+  saveDB(); return true;
+}
+function logout(){
+  if(SESSION) log("退出登录", SESSION.name);
+  try{ localStorage.removeItem(LS_KEY+"_session"); }catch(e){}
+  SESSION=null; renderLogin();
+}
+function restoreSession(){
+  try{
+    const raw=localStorage.getItem(LS_KEY+"_session"); if(!raw) return null;
+    const s=JSON.parse(raw); if(!s||!s.user) return null;
+    const u=(DB.users||[]).find(x=>x.username===s.user); if(!u) return null;
+    SESSION={user:u.username,name:u.name,role:u.role,loginAt:s.loginAt||nowTxt()};
+    return SESSION;
+  }catch(e){ return null; }
+}
+function doLogin(){
+  const ok=login($("lg_user").value,$("lg_pass").value);
+  const err=$("lg_err");
+  if(!ok){ if(err) err.textContent="用户名或密码不正确，请重试"; return; }
+  enterApp();
+}
+function enterApp(){
+  const app=$("appRoot"); if(app) app.style.display="flex";
+  $("loginRoot").innerHTML="";
+  renderNav(); renderPage();
+}
+function renderLogin(){
+  const app=$("appRoot"); if(app) app.style.display="none";
+  $("loginRoot").innerHTML=`
+  <div style="min-height:100vh;display:grid;place-items:center;padding:24px">
+    <div class="card" style="max-width:440px;width:100%;padding:36px 38px;text-align:center">
+      <div style="width:64px;height:64px;border-radius:18px;background:var(--ember);display:grid;place-items:center;font-size:34px;margin:0 auto;box-shadow:0 6px 18px rgba(232,100,47,.4);transform:rotate(-6deg)">⛺</div>
+      <h1 style="font-family:var(--disp);font-size:26px;color:var(--pine2);margin:16px 0 4px;letter-spacing:1px">${esc(DB.org.name||"青禾营地")} · 课消管理系统</h1>
+      <p style="color:var(--ink2);font-size:13px;letter-spacing:2px;margin-bottom:24px">学员资产与课消管理 · 校管家参考版</p>
+      <div class="frm" style="text-align:left">
+        <div class="frow"><label>用户名</label><input id="lg_user" autocomplete="username" placeholder="请输入用户名"></div>
+        <div class="frow"><label>密码</label><input id="lg_pass" type="password" autocomplete="current-password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn ember" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">登 录</button>
+        <div class="errmsg" id="lg_err" style="min-height:20px;text-align:center"></div>
+      </div>
+      <div class="note" style="text-align:left;font-size:12px;line-height:2.1">
+        演示账号（默认密码 <b>123456</b>）：<br>
+        <b>admin</b> 管理员 · 全部权限　<b>xiaozhang</b> 校长 · 审批退费/报表<br>
+        <b>caiwu</b> 财务 · 收费/退费/导出　<b>jiaowu</b> 教务 · 学员/排课/考勤
+      </div>
+    </div>
+  </div>`;
+  setTimeout(()=>{ const u=$("lg_user"); if(u) u.focus(); },80);
+}
+
+function saveDB(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }catch(e){ toast("数据保存失败："+e.message,"err"); } maybeAutoSync(); }
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    const d = JSON.parse(raw);
+    if(!d || !d.students) return null;
+    return d;
+  }catch(e){ return null; }
+}
+function defaultDB(){
+  return { org:{name:"青禾营地", amountThreshold:500, operator:"教务老师", phoneMask:true}, users:[
+    {username:"admin",     password:"123456", name:"管理员", role:"admin"},
+    {username:"xiaozhang", password:"123456", name:"校长",   role:"principal"},
+    {username:"caiwu",     password:"123456", name:"财务",   role:"cashier"},
+    {username:"jiaowu",    password:"123456", name:"教务",   role:"teacher"}
+  ], customFields:[], students:[], singles:[], combos:[],
+    payments:[], refunds:[], consumptions:[], classes:[], invites:[], logs:[], createdAt:nowTxt() };
+}
+function log(op, detail){
+  DB.logs.unshift({time:nowTxt(), op, detail,
+    operator:(SESSION&&SESSION.name)||DB.org.operator||"—",
+    role:(SESSION&&ROLE_CN[SESSION.role])||"",
+    ip:"本机"});
+  if(DB.logs.length>500) DB.logs.length=500;
+}
+function resetDB(){ DB=defaultDB(); saveDB(); }
+
+/* ---------------- 课消单元（unit） ---------------- */
+function unitKeyFor(singleId, comboId){ return comboId ? ("C:"+comboId+":"+singleId) : ("S:"+singleId); }
+function unitInfo(key){
+  // 优先从收费快照取名，其次从产品定义取名
+  for(const p of DB.payments){
+    for(const it of p.items){ if(it.unitKey===key) return {key, name:it.unitName, comboId:(key[0]==="C"?p.productId:null)}; }
+  }
+  const parts=key.split(":");
+  if(parts[0]==="S"){ const s=DB.singles.find(x=>x.id===parts[1]); return {key,name:s?s.name:"已删除产品",comboId:null}; }
+  if(parts[0]==="C"){ const c=DB.combos.find(x=>x.id===parts[1]); const s=DB.singles.find(x=>x.id===parts[2]);
+    return {key,name:(c?c.name:"套餐")+"·"+(s?s.name:"子产品"),comboId:parts[1]}; }
+  return {key,name:"未知单元",comboId:null};
+}
+function allUnitKeys(){
+  const set=new Set();
+  DB.payments.forEach(p=>p.items.forEach(i=>set.add(i.unitKey)));
+  DB.classes.forEach(c=>set.add(c.unitKey));
+  DB.consumptions.forEach(c=>set.add(c.unitKey));
+  return [...set];
+}
+
+/* ---------------- 账户核算（核心） ---------------- */
+function computeAccount(studentId, unitKey){
+  let chargeLessons=0, chargeAmount=0, consumedLessons=0, consumedAmount=0, refundLessons=0, refundAmount=0;
+  DB.payments.forEach(p=>{
+    if(p.studentId!==studentId) return;
+    p.items.forEach(it=>{ if(it.unitKey===unitKey){ chargeLessons+=it.lessons; chargeAmount+=it.amount; } });
+  });
+  DB.consumptions.forEach(c=>{
+    if(c.studentId===studentId && c.unitKey===unitKey){ consumedLessons+=c.lessons; consumedAmount+=c.amount; }
+  });
+  DB.refunds.forEach(r=>{
+    if(r.studentId===studentId && r.unitKey===unitKey && r.status==="approved"){ refundLessons+=r.lessons; refundAmount+=r.cancelAmount; }
+  });
+  const unitPrice = chargeLessons>0 ? Math.round(chargeAmount/chargeLessons) : 0;
+  return {
+    chargeLessons, chargeAmount, consumedLessons, consumedAmount, refundLessons, refundAmount,
+    unitPrice,
+    totalLessons: chargeLessons - refundLessons,
+    totalAmount:  chargeAmount - refundAmount,
+    remainingLessons: chargeLessons - refundLessons - consumedLessons,
+    remainingAmount:  chargeAmount - refundAmount - consumedAmount,
+  };
+}
+function accountsOfStudent(studentId){
+  const keys=new Set();
+  DB.payments.filter(p=>p.studentId===studentId).forEach(p=>p.items.forEach(i=>keys.add(i.unitKey)));
+  DB.consumptions.filter(c=>c.studentId===studentId).forEach(c=>keys.add(c.unitKey));
+  return [...keys].map(k=>({key:k, info:unitInfo(k), acc:computeAccount(studentId,k)}));
+}
+
+/* ---------------- 收费 ---------------- */
+function comboItemsSplit(combo, paidFen){
+  // 按套餐 items 拆分金额比例缩放至实收金额（最大余数法保证精确合计）
+  const baseSum = sum(combo.items.map(i=>i.amount));
+  const factor = baseSum>0 ? paidFen/baseSum : 1;
+  const out = combo.items.map(it=>{
+    const s=DB.singles.find(x=>x.id===it.singleId);
+    return { unitKey:unitKeyFor(it.singleId, combo.id), unitName:combo.name+"·"+(s?s.name:"子产品"),
+             lessons:it.lessons, amount:Math.round(it.amount*factor) };
+  });
+  let diff = paidFen - sum(out.map(o=>o.amount));
+  if(out.length && diff!==0){
+    const nz=[...out].reverse().find(o=>o.amount>0)||out[out.length-1]; // 尾差修正：落在最后一项非0金额（避免加到赠品）
+    out[out.indexOf(nz)].amount += diff;
+  }
+  return out;
+}
+function addPayment({studentId, type, productId, amountFen, method, date, note, orderNo, sales, campus}){
+  let items=[], name="";
+  if(type==="single"){
+    const s=DB.singles.find(x=>x.id===productId); if(!s) return {err:"产品不存在"};
+    items=[{unitKey:unitKeyFor(s.id), unitName:s.name, lessons:s.totalLessons, amount:amountFen}];
+    name=s.name;
+  }else{
+    const c=DB.combos.find(x=>x.id===productId); if(!c) return {err:"套餐不存在"};
+    items=comboItemsSplit(c, amountFen);
+    name=c.name;
+  }
+  if(amountFen<=0) return {err:"实收金额必须大于0"};
+  const st0=DB.students.find(x=>x.id===studentId);
+  const pay={id:uid(),studentId,type,productId,name,amount:amountFen,items,method,date,
+    operator:(SESSION&&SESSION.name)||DB.org.operator||"—",note:note||"",
+    orderNo:orderNo||"",sales:sales||"",campus:campus||(st0?st0.campus||"":""),createdAt:nowTxt()};
+  DB.payments.push(pay);
+  log("收费", `${studentName(studentId)} 报读「${name}」¥${fmtFen(amountFen)}（${method}${sales?" · 销售:"+sales:""}${campus?" · 校区:"+campus:""}）`);
+  saveDB();
+  return {ok:true, id:pay.id};
+}
+
+/* ---------------- 退费 ---------------- */
+function calcRefund(studentId, unitKey, feeFen, otherFen){
+  const acc=computeAccount(studentId, unitKey);
+  const refundAmount = Math.max(0, acc.remainingAmount - (feeFen||0) - (otherFen||0));
+  return {acc, refundAmount, feeFen: feeFen||0, otherFen: otherFen||0};
+}
+function addRefund({studentId, unitKey, feeFen, otherFen, amountFen, reason, note, method, date, sales, orderNo, campus}){
+  const info=unitInfo(unitKey);
+  const r=calcRefund(studentId, unitKey, feeFen, otherFen);
+  if(r.acc.remainingLessons<=0) return {err:"该产品剩余课时为0，无需退费"};
+  let refundAmount=r.refundAmount;
+  if(amountFen>0) refundAmount=Math.min(amountFen, r.refundAmount); // 手动指定应退金额（不超自动计算值）
+  const rf={id:uid(),studentId,unitKey,unitName:info.name,lessons:r.acc.remainingLessons,
+            cancelAmount:r.acc.remainingAmount, // 账目回滚金额（全额剩余，含手续费口径分离）
+            amount:refundAmount,fee:r.feeFen,otherFee:r.otherFen,reason,note,status:"pending",
+            method:method||"",date:date||todayStr(),sales:sales||"",orderNo:orderNo||"",campus:campus||"",
+            operator:(SESSION&&SESSION.name)||DB.org.operator||"—",createdAt:nowTxt(),approvedAt:""};
+  DB.refunds.push(rf);
+  log("退费申请", `${studentName(studentId)} 「${info.name}」申请退 ¥${fmtFen(refundAmount)}（手续费¥${fmtFen(r.feeFen)}${r.otherFen?" · 其他扣减¥"+fmtFen(r.otherFen):""}）`);
+  saveDB();
+  return {ok:true, id:rf.id};
+}
+function approveRefund(id){
+  const r=DB.refunds.find(x=>x.id===id); if(!r||r.status!=="pending") return;
+  r.status="approved"; r.approvedAt=nowTxt(); r.operator=(SESSION&&SESSION.name)||DB.org.operator||"—";
+  log("退费审核通过", `${studentName(r.studentId)} 「${r.unitName}」退 ¥${fmtFen(r.amount)}（红字回滚课时${r.lessons}节）`);
+  saveDB();
+}
+function rejectRefund(id){
+  const r=DB.refunds.find(x=>x.id===id); if(!r||r.status!=="pending") return;
+  r.status="rejected"; r.operator=(SESSION&&SESSION.name)||DB.org.operator||"—";
+  log("退费驳回", `${studentName(r.studentId)} 「${r.unitName}」${r.reason||""}`);
+  saveDB();
+}
+
+/* ---------------- 课消 ---------------- */
+function consume(studentId, unitKey, lessons, date, source, classId, operator, note){
+  if(lessons<=0) return {err:"消课数量需大于0"};
+  const acc=computeAccount(studentId, unitKey);
+  if(acc.remainingLessons < lessons) return {err:"剩余课时不足（剩 "+acc.remainingLessons+" 节）"};
+  const amount=Math.round(acc.unitPrice*lessons);
+  const info=unitInfo(unitKey);
+  const c={id:uid(),studentId,unitKey,unitName:info.name,lessons,amount,date,source,classId:classId||"",operator,note:note||"",createdAt:nowTxt()};
+  DB.consumptions.push(c);
+  log("课消", `${studentName(studentId)} 「${info.name}」消${lessons}节 ¥${fmtFen(amount)}（${source==="attendance"?"考勤":"手动"}）`);
+  saveDB();
+  return {ok:true, id:c.id};
+}
+
+/* ---------------- 排课 / 考勤 / 邀约 ---------------- */
+function classInvites(classId){ return DB.invites.filter(i=>i.classId===classId); }
+function ensureInvites(classId){
+  const cls=DB.classes.find(c=>c.id===classId); if(!cls) return;
+  DB.students.forEach(s=>{
+    const acc=computeAccount(s.id, cls.unitKey);
+    if(acc.remainingLessons<=0) return;
+    if(!DB.invites.some(i=>i.classId===classId && i.studentId===s.id)){
+      DB.invites.push({id:uid(),classId,studentId:s.id,status:"未邀约",message:"",time:""});
+    }
+  });
+  saveDB();
+}
+function inviteMsg(student, cls){
+  const s=student, c=cls;
+  return `【${DB.org.name||"营地"}】${s.name}同学家长您好！${c.name} 将于 ${c.date}（${weekCN(c.date)}）${c.start}-${c.end} 在「${c.location||"营地"}」开课，由 ${c.teacher||"老师"} 授课。请提前10分钟到达，穿运动服、自带水杯。收到请回复，谢谢！`;
+}
+function setInviteStatus(inviteId, status){
+  const i=DB.invites.find(x=>x.id===inviteId); if(!i) return;
+  i.status=status;
+  const cls=DB.classes.find(c=>c.id===i.classId);
+  const st=DB.students.find(x=>x.id===i.studentId);
+  log("邀约", `${st?st.name:""} 「${cls?cls.name:""}」→ ${status}`);
+  saveDB();
+}
+function copyText(txt){
+  const fallback=()=>{ const ta=document.createElement("textarea"); ta.value=txt;
+    ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove(); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(txt).then(()=>toast("已复制邀约话术 ✓","ok"))
+      .catch(()=>{ try{fallback();toast("已复制邀约话术 ✓","ok");}catch(e){toast("复制失败，请手动复制","err");} });
+  }
+  try{ fallback(); toast("已复制邀约话术 ✓","ok"); }catch(e){ toast("复制失败，请手动复制","err"); }
+  return Promise.resolve();
+}
+function saveAttendance(classId, presents){
+  const cls=DB.classes.find(c=>c.id===classId); if(!cls) return;
+  const has=DB.consumptions.some(c=>c.classId===classId);
+  if(has){ toast("本班次已核销过课时，请勿重复操作","err"); return; }
+  const invs=ensureInvites(classId);
+  let okCount=0, failMsg=[];
+  presents.forEach(pid=>{
+    const st=DB.students.find(x=>x.id===pid); if(!st) return;
+    const r=consume(pid, cls.unitKey, 1, cls.date, "attendance", classId, DB.org.operator, "考勤自动消课（"+cls.name+"）");
+    if(r.ok){ okCount++;
+      const iv=DB.invites.find(i=>i.classId===classId&&i.studentId===pid);
+      if(iv){ iv.status="已到课"; }
+    } else failMsg.push((st.name||"")+"："+r.err);
+  });
+  DB.invites.forEach(i=>{ if(i.classId===classId && i.status!=="已到课") i.status="未到"; });
+  saveDB();
+  if(failMsg.length) toast("部分学员消课失败："+failMsg.join("；"),"err");
+  else toast("考勤完成：已为 "+okCount+" 名学员自动消课 ✓","ok");
+}
+
+/* ---------------- 学员 ---------------- */
+const maskPhone = p => String(p||"").replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
+const cfInputs = (s, f) => (DB.customFields||[]).map(x=>`
+  <div class="frow"><label>${esc(x.label)}</label><input id="cf_${esc(x.key)}" value="${esc(f? s[x.key]!=null?s[x.key]:"" : "")}" placeholder="选填"></div>`).join("");
+const studentName = id => { const s=DB.students.find(x=>x.id===id); return s?s.name:"（已删除学员）"; };
+function studentTotalRemaining(sid){
+  const accs=accountsOfStudent(sid);
+  return {lessons:sum(accs.map(a=>a.acc.remainingLessons)), amount:sum(accs.map(a=>a.acc.remainingAmount))};
+}
+function needsRenew(sid){
+  const thr=yuan2fen(DB.org.amountThreshold); // 续费预警阈值（金额，单位元）
+  return accountsOfStudent(sid).some(a=>a.acc.remainingAmount>0 && a.acc.remainingAmount<=thr);
+}
+
+/* ---------------- CSV / 导入导出 ---------------- */
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,"");
+  const rows=[]; let row=[], cell="", inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){
+      if(ch==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else inQ=false; }
+      else cell+=ch;
+    }else{
+      if(ch==='"') inQ=true;
+      else if(ch===','){ row.push(cell); cell=""; }
+      else if(ch==='\n'){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(ch==='\r'){ /* skip */ }
+      else cell+=ch;
+    }
+  }
+  if(cell!==""||row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.some(c=>String(c).trim()!==""));
+}
+function csvStr(rows){
+  return "\uFEFF"+rows.map(r=>r.map(c=>{
+    const s=String(c==null?"":c);
+    return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(",")).join("\r\n");
+}
+function download(filename, content, mime){
+  const blob=new Blob([content],{type:mime||"application/octet-stream"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },800);
+}
+function downloadCSV(rows, filename){ download(filename, csvStr(rows), "text/csv;charset=utf-8"); }
+function exportXLS(rows, filename, sheetName){
+  if(window.XLSX){
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"]=(rows[0]||[]).map((h,i)=>({wch:Math.max(10, String(h).length*2+4)}));
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,sheetName||"Sheet1");
+    XLSX.writeFile(wb, filename);
+    toast("已导出 "+filename,"ok");
+  }else{
+    downloadCSV(rows, filename.replace(/\.xlsx?$/i,".csv"));
+    toast("未联网加载 Excel 组件，已改用 CSV 导出","ok");
+  }
+}
+function reportFileName(kind, start, end){
+  const org=DB.org.name||"机构";
+  return kind+"_"+org+"_"+(start||"0000-00-00")+"_"+(end||"9999-12-31")+".xlsx";
+}
+function readImportFile(file, cb){
+  if(file.name.toLowerCase().endsWith(".csv")){
+    const rd=new FileReader();
+    rd.onload=()=>cb(parseCSV(String(rd.result||"")));
+    rd.readAsText(file, "utf-8");
+  }else if((file.name.toLowerCase().endsWith(".xlsx")||file.name.toLowerCase().endsWith(".xls")) && window.XLSX){
+    const rd=new FileReader();
+    rd.onload=()=>{ try{
+      const wb=XLSX.read(rd.result,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      cb(XLSX.utils.sheet_to_json(ws,{header:1,defval:""}));
+    }catch(e){ toast("Excel 解析失败："+e.message,"err"); } };
+    rd.readAsArrayBuffer(file);
+  }else{
+    toast("请上传 .csv 文件（或联网后用 .xlsx）","err");
+  }
+}
+const PHONE_RE=/^1[3-9]\d{9}$/;
+function importStudents(rows, mode){
+  const errs=[]; let add=0, upd=0, skip=0;
+  const cfs=DB.customFields||[];
+  rows.forEach((r,idx)=>{
+    if(idx===0 && /姓名|手机|电话|性别/i.test(String(r[0]))) return; // 表头
+    const [name, phone, memberNo, gender, birthday, school, grade, campus, source, note, ...cfv] = r.map(c=>String(c==null?"":c).trim());
+    if(!name){ errs.push([idx+1,"",phone,"缺少姓名"]); return; }
+    if(!/^[0-9\-]{5,20}$/.test(phone)){ errs.push([idx+1,name,phone,"联系电话格式不正确"]); return; }
+    const extra={};
+    cfs.forEach((x,i)=>{ if(cfv[i]) extra[x.key]=cfv[i]; });
+    const exist=DB.students.find(s=>s.phone===phone);
+    if(exist){
+      if(mode==="skip"){ skip++; return; }
+      if(mode==="update"){
+        exist.name=name; exist.memberNo=memberNo; exist.campus=campus; exist.gender=gender;
+        exist.birthday=birthday; exist.school=school; exist.grade=grade; exist.source=source;
+        if(note) exist.note=note; Object.assign(exist,extra); upd++;
+        return;
+      }
+    }
+    DB.students.push({id:uid(),name,phone,memberNo,campus,gender,birthday,school,grade,source,note,createdAt:nowTxt()},extra);
+    add++;
+  });
+  saveDB();
+  log("批量导入学员", `新增${add} / 更新${upd} / 跳过${skip} / 失败${errs.length}`);
+  return {add,upd,skip,errs};
+}
+function importPayments(rows){
+  const errs=[]; let ok=0;
+  rows.forEach((r,idx)=>{
+    if(idx===0 && /姓名|手机|电话|编号|产品|金额/i.test(String(r[0]))) return; // 表头
+    const c=r.map(x=>String(x==null?"":x).trim());
+    let name="", phone="", memberNo="", productName="", orderNo="", amountStr="", method="", date="", campus="", sales="";
+    if(c.length<=5){ // 兼容旧模板：电话/产品/金额/方式/日期（首列是手机号）；否则为新模板精简行
+      if(/^1[3-9]\d{9}$/.test(c[0])){ [phone, productName, amountStr, method, date] = c; }
+      else{ [name, phone, memberNo, productName, orderNo] = c; }
+    }else if(c.length<=8){ // 旧新模板：姓名/电话/编号/产品/订单号/金额/方式/日期
+      [name, phone, memberNo, productName, orderNo, amountStr, method, date] = c;
+    }else{ // 新模板+校区/售卖人：姓名/电话/编号/产品/订单号/金额/方式/日期/校区/售卖人
+      [name, phone, memberNo, productName, orderNo, amountStr, method, date, campus, sales] = c;
+    }
+    if((!phone&&!memberNo&&!name) || !productName || !amountStr){ errs.push([idx+1,name||phone||memberNo,productName,"必填项缺失"]); return; }
+    let st=null;
+    if(memberNo) st=DB.students.find(s=>s.memberNo===memberNo);
+    if(!st && phone) st=DB.students.find(s=>s.phone===phone);
+    if(!st && name) st=DB.students.find(s=>s.name===name);
+    if(!st){ errs.push([idx+1,name||phone||memberNo,productName,"学员不存在（请先用用户编号/电话/姓名匹配）"]); return; }
+    const amount=yuan2fen(amountStr);
+    if(amount<=0){ errs.push([idx+1,name||phone,productName,"金额不正确"]); return; }
+    let type=null, pid=null;
+    const s=DB.singles.find(x=>x.name===productName);
+    if(s){ type="single"; pid=s.id; }
+    else{ const c=DB.combos.find(x=>x.name===productName); if(c){ type="combo"; pid=c.id; } }
+    if(!type){ errs.push([idx+1,name||phone,productName,"产品不存在（单品或套餐名称需完全一致）"]); return; }
+    const res=addPayment({studentId:st.id,type,productId:pid,amountFen:amount,method:method||"微信",
+      date:date||todayStr(),note:"批量导入",orderNo,sales,campus});
+    if(res.err){ errs.push([idx+1,name||phone,productName,res.err]); return; }
+    ok++;
+  });
+  saveDB();
+  log("批量导入收费", `成功${ok} / 失败${errs.length}`);
+  return {ok,errs};
+}
+function importRefunds(rows){
+  const errs=[]; let ok=0;
+  rows.forEach((r,idx)=>{
+    if(idx===0 && /姓名|手机|电话|编号|产品|金额|手续费|原因/i.test(String(r[0]))) return; // 表头
+    const c=r.map(x=>String(x==null?"":x).trim());
+    let name="", phone="", memberNo="", productName="", orderNo="", amountStr="", method="", date="", campus="", sales="", feeStr="", otherStr="", reason="";
+    if(c.length<=6){ // 兼容旧模板：电话/编号/产品/手续费/其他/原因（首列是手机号）；否则为新模板精简行
+      if(/^1[3-9]\d{9}$/.test(c[0])){ [phone, memberNo, productName, feeStr, otherStr, reason] = c; }
+      else{ [name, phone, memberNo, productName, orderNo, amountStr] = c; }
+    }else{ // 新模板（与批量收费一致+退费专有）：姓名/电话/编号/产品/订单号/应退金额/方式/日期/校区/售卖人/手续费/其他/原因
+      [name, phone, memberNo, productName, orderNo, amountStr, method, date, campus, sales, feeStr, otherStr, reason] = c;
+    }
+    if((!phone&&!memberNo&&!name) || !productName){ errs.push([idx+1,name||phone||memberNo,productName,"必填项缺失"]); return; }
+    let st=null;
+    if(memberNo) st=DB.students.find(s=>s.memberNo===memberNo);
+    if(!st && phone) st=DB.students.find(s=>s.phone===phone);
+    if(!st && name) st=DB.students.find(s=>s.name===name);
+    if(!st){ errs.push([idx+1,name||phone||memberNo,productName,"学员不存在（请先用用户编号/电话/姓名匹配）"]); return; }
+    let unitKey=null;
+    allUnitKeys().forEach(k=>{ const i=unitInfo(k); if(!unitKey&&i.name===productName) unitKey=k; });
+    if(!unitKey){ errs.push([idx+1,name||phone||memberNo,productName,"找不到该产品单元（格式：套餐名·子产品名）"]); return; }
+    const res=addRefund({studentId:st.id,unitKey,feeFen:yuan2fen(feeStr),otherFen:yuan2fen(otherStr),amountFen:yuan2fen(amountStr),
+      reason:reason||"批量导入",note:"批量导入",method:method||"",date:date||"",sales,campus,orderNo});
+    if(res.err){ errs.push([idx+1,name||phone||memberNo,productName,res.err]); return; }
+    ok++;
+  });
+  saveDB();
+  log("批量导入退费申请", `成功${ok} / 失败${errs.length}`);
+  return {ok,errs};
+}
+function importConsumptions(rows){
+  const errs=[]; let ok=0;
+  rows.forEach((r,idx)=>{
+    if(idx===0 && /手机|姓名|产品/i.test(String(r[0]))) return;
+    const [phone, productName, date, countStr] = r.map(c=>String(c==null?"":c).trim());
+    if(!phone || !productName){ errs.push([idx+1,phone,productName,"必填项缺失"]); return; }
+    const st=DB.students.find(s=>s.phone===phone);
+    if(!st){ errs.push([idx+1,phone,productName,"学员不存在"]); return; }
+    // 产品名称可能是套餐名+子产品名，尝试匹配单元
+    let unitKey=null;
+    allUnitKeys().forEach(k=>{
+      const info=unitInfo(k);
+      if(!unitKey && info.name===productName) unitKey=k;
+    });
+    if(!unitKey){ errs.push([idx+1,phone,productName,"找不到该产品单元（格式：套餐名·子产品名）"]); return; }
+    const res=consume(st.id, unitKey, parseInt(countStr)||1, date||todayStr(), "manual", "", DB.org.operator, "批量补录");
+    if(res.err){ errs.push([idx+1,phone,productName,res.err]); return; }
+    ok++;
+  });
+  saveDB();
+  log("批量导入消课", `成功${ok} / 失败${errs.length}`);
+  return {ok,errs};
+}
+function importErrorFile(errs){
+  downloadCSV([["行号","姓名/手机号","产品","错误原因"], ...errs], "导入错误报告_"+todayStr()+".csv");
+}
+function downloadTemplate(kind){
+  if(kind==="students") downloadCSV([
+    ["姓名*","联系电话*","用户编号","性别","出生日期","学校","年级","校区","来源渠道","备注", ...(DB.customFields||[]).map(x=>x.label)],
+    ["张小明","13800009999","STU-0001","男","2013-05-01","阳光小学","四年级","城西校区","地推","", ...(DB.customFields||[]).map(()=>"")],
+  ], "学员导入模板.csv");
+  if(kind==="payments") downloadCSV([
+    ["学员姓名","联系电话","用户编号","购买产品名称*","平台订单号","实收金额(元)*","支付方式","购买日期","校区","售卖人"],
+    ["张小明","13800009999","STU-0001","创意美术","T20260101001","1200","微信","2026-01-01","阳光校区","王老师"],
+    ["张小明","13800009999","STU-0001","美术+书法联报","T20260101002","2000","支付宝","2026-01-01","阳光校区","王老师"],
+  ], "收费导入模板.csv");
+  if(kind==="consumptions") downloadCSV([
+    ["学员手机号*","产品名称*（套餐请用：套餐名·子产品名）","消课日期","消课数量*"],
+    ["13800009999","美术+书法联报·创意美术","2026-01-08","1"],
+  ], "消课补录模板.csv");
+  if(kind==="refunds") downloadCSV([
+    ["学员姓名","联系电话","用户编号","产品名称*（套餐请用：套餐名·子产品名）","平台订单号","应退金额(元)（留空=自动计算）","退款方式","退费日期","校区","售卖人","手续费(元)","其他扣减(元)","退费原因"],
+    ["张小明","13800009999","STU-0001","美术+书法联报·创意美术","R20260101001","","微信","2026-01-10","阳光校区","王老师","0","0","转学"],
+  ], "退费导入模板.csv");
+}
+
+/* ---------------- 报表数据 ---------------- */
+function reportConsumedRows(start, end, unitKey, studentId, teacher, campus, sales){
+  const rows=[];
+  DB.consumptions.forEach(c=>{
+    if(start && c.date<start) return;
+    if(end && c.date>end) return;
+    if(unitKey && c.unitKey!==unitKey) return;
+    if(studentId && c.studentId!==studentId) return;
+    if(campus && studentCampus(c.studentId)!==campus) return;
+    if(sales && salesOfUnit(c.studentId, c.unitKey)!==sales) return;
+    if(teacher){
+      const cls=DB.classes.find(x=>x.id===c.classId);
+      if(!cls || cls.teacher!==teacher) return;
+    }
+    rows.push({date:c.date, studentId:c.studentId, unitKey:c.unitKey, unitName:c.unitName, lessons:c.lessons, amount:c.amount,
+               source:c.source==="attendance"?"考勤消课":"手动补录", campus:studentCampus(c.studentId), sales:salesOfUnit(c.studentId, c.unitKey),
+               teacher:(()=>{const cl=DB.classes.find(x=>x.id===c.classId);return cl?cl.teacher:"—";})()});
+  });
+  return rows;
+}
+function reportPendingRows(unitKey, studentId, campus, sales){
+  const rows=[];
+  DB.students.forEach(s=>{
+    accountsOfStudent(s.id).forEach(a=>{
+      if(a.acc.remainingLessons<=0) return;
+      if(unitKey && a.key!==unitKey) return;
+      if(studentId && s.id!==studentId) return;
+      if(campus && studentCampus(s.id)!==campus) return;
+      if(sales && salesOfUnit(s.id, a.key)!==sales) return;
+      rows.push({studentId:s.id, studentName:s.name, phone:s.phone, campus:studentCampus(s.id),
+                 sales:salesOfUnit(s.id, a.key), unitKey:a.key, unitName:a.info.name,
+                 remainingLessons:a.acc.remainingLessons, remainingAmount:a.acc.remainingAmount, unitPrice:a.acc.unitPrice});
+    });
+  });
+  rows.sort((a,b)=>b.remainingAmount-a.remainingAmount);
+  return rows;
+}
+function reportMoneyRows(){
+  const rows=[];
+  DB.payments.forEach(p=>rows.push({date:p.date, type:"收费", studentId:p.studentId, name:p.name, amount:p.amount, method:p.method, operator:p.operator, note:p.note, campus:p.campus||"", sales:p.sales||""}));
+  DB.refunds.filter(r=>r.status==="approved").forEach(r=>rows.push({date:(r.date||r.approvedAt).slice(0,10), type:"退费", studentId:r.studentId, name:r.unitName, amount:-r.amount, method:r.method||"", operator:r.operator, note:(r.reason||"")+"（回滚课时"+r.lessons+"节，手续费"+fmtFen(r.fee)+"）", campus:r.campus||"", sales:r.sales||""}));
+  rows.sort((a,b)=>a.date<b.date?-1:1);
+  return rows;
+}
+
+/* ================================================================
+   渲染：导航 & 页面
+   ================================================================ */
+const NAV=[
+  {g:"营地总览"},{k:"dash",t:"工作台",i:"🏕️"},{k:"invites",t:"邀约中心",i:"📣",perms:["teacher","principal"]},
+  {g:"教务运营"},{k:"students",t:"学员档案",i:"🎒"},{k:"products",t:"产品管理",i:"📦"},
+  {k:"classes",t:"排课与考勤",i:"🗓️",perms:["teacher","principal"]},
+  {k:"finance",t:"收费与退费",i:"💰",perms:["cashier","principal"]},
+  {g:"财务核对"},{k:"reports",t:"报表导出",i:"📊"},{k:"settings",t:"设置与数据",i:"⚙️",perms:["admin"]},
+];
+function renderNav(){
+  const el=$("nav");
+  const navOK=n=>!n.perms || !SESSION || SESSION.role==="admin" || n.perms.includes(SESSION.role);
+  el.innerHTML=NAV.filter(navOK).map(n=>{
+    if(n.g) return `<div class="group">${n.g}</div>`;
+    let badge="";
+    if(n.k==="invites"){
+      const today=DB.classes.filter(c=>c.date===todayStr());
+      const need=sum(today.map(c=>classInvites(c.id).filter(i=>i.status==="未邀约"||i.status==="已邀约").length));
+      if(need>0) badge=`<span class="dot">${need}</span>`;
+    }
+    if(n.k==="finance"){
+      const pend=DB.refunds.filter(r=>r.status==="pending").length;
+      if(pend>0) badge=`<span class="dot">${pend}</span>`;
+    }
+    return `<a data-k="${n.k}" class="${CUR===n.k?"on":""}" onclick="go('${n.k}')"><span class="ico">${n.i}</span>${n.t}${badge}</a>`;
+  }).join("");
+  $("brandName").textContent=DB.org.name||"青禾营地";
+  $("footOrg").textContent=DB.org.name||"—";
+  $("footUser").textContent=(SESSION&&SESSION.name)||DB.org.operator||"—";
+  $("footRole").textContent=SESSION?("· "+ROLE_CN[SESSION.role]):"";
+  document.title=(DB.org.name||"青禾营地")+" · 课消管理系统";
+}
+function go(k){
+  CUR=k; renderNav(); renderPage();
+  try{ history.replaceState(null,"","#"+k); }catch(e){}
+  window.scrollTo({top:0});
+}
+function renderPage(){
+  const fn={dash:pageDash, students:pageStudents, products:pageProducts, finance:pageFinance,
+            classes:pageClasses, invites:pageInvites, reports:pageReports, settings:pageSettings}[CUR];
+  fn();
+}
+function topbar(title, sub, extra){
+  const d=new Date();
+  $("topbar").innerHTML=`
+    <div>
+      <div class="crumb">${sub||"青少年营地教育 · 课消管理"}</div>
+      <h2>${title}</h2>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      ${extra||""}
+      <span class="datechip">📅 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 · ${weekCN(todayStr())}</span>
+    </div>`;
+}
+function toast(msg,type){
+  const root=$("toastRoot");
+  const t=document.createElement("div");
+  t.className="toast "+(type||"");
+  t.textContent=msg;
+  Object.assign(t.style,{
+    position:"fixed",top:"22px",right:"22px",zIndex:999,padding:"12px 18px",borderRadius:"12px",
+    fontWeight:"700",fontSize:"13.5px",boxShadow:"0 10px 30px rgba(0,0,0,.25)",
+    background:type==="err"?"var(--red)":(type==="ok"?"var(--ok)":"var(--pine3)"),color:"#fff",
+    animation:"pop .2s ease both",maxWidth:"380px"
+  });
+  root.appendChild(t);
+  setTimeout(()=>{ t.style.transition="opacity .3s"; t.style.opacity="0"; setTimeout(()=>t.remove(),320); },2600);
+}
+function maskClose(){ $("maskRoot").innerHTML=""; }
+function openModal(html, wide){
+  $("maskRoot").innerHTML=`<div class="mask" onclick="if(event.target===this)maskClose()"><div class="modal ${wide?"wide":""}">${html}</div></div>`;
+}
+function ask(title, msg, cb){
+  openModal(`
+    <div class="mhd"><h3>${title}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><p style="font-size:14px;line-height:1.9">${msg}</p></div>
+    <div class="mft">
+      <button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn ember" onclick="maskClose();cb()">确认</button>
+    </div>`);
+}
+const avColor = name => { let h=0; for(const ch of String(name)) h=(h*31+ch.codePointAt(0))%360; return `hsl(${h},42%,42%)`; };
+const av = name => `<span class="avatar" style="background:${avColor(name)}">${esc(String(name).slice(0,1))}</span>`;
+
+/* ---------------- 工作台 ---------------- */
+function pageDash(){
+  const pend=DB.refunds.filter(r=>r.status==="pending").length;
+  const totalPaid=sum(DB.payments.map(p=>p.amount));
+  const totalConsumed=sum(DB.consumptions.map(c=>c.amount));
+  const pendingRows=reportPendingRows();
+  const totalPendingAmount=sum(pendingRows.map(r=>r.remainingAmount));
+  const totalPendingLessons=sum(pendingRows.map(r=>r.remainingLessons));
+  const today=DB.classes.filter(c=>c.date===todayStr());
+  const tomorrow=DB.classes.filter(c=>c.date===addDays(todayStr(),1));
+  const renew=DB.students.filter(s=>needsRenew(s.id));
+  const recent=DB.logs.slice(0,6);
+  const cards=[
+    {lbl:"在读学员",num:DB.students.length,unit:"人",deco:"🎒",cls:"",sub:"档案总数 "+DB.students.length+" · 批量导入可用"},
+    {lbl:"累计实收（含套餐拆分）",num:fmtFen(totalPaid),unit:"元",deco:"💰",cls:"ember",sub:"收费 "+DB.payments.length+" 笔 · 退费待审 "+pend+" 笔"},
+    {lbl:"已课消金额",num:fmtFen(totalConsumed),unit:"元",deco:"⛏️",cls:"sky",sub:"累计消课 "+sum(DB.consumptions.map(c=>c.lessons))+" 课时"},
+    {lbl:"待课消金额（预收负债）",num:fmtFen(totalPendingAmount),unit:"元",deco:"🏔️",cls:"sun",sub:"待消 "+totalPendingLessons+" 课时 · 即未来营收池"},
+  ];
+  $("view").innerHTML=`
+  <div class="grid g4" style="margin-bottom:18px">
+    ${cards.map((c,i)=>`<div class="card kpi ${c.cls} reveal" style="animation-delay:${i*70}ms">
+      <span class="deco">${c.deco}</span><div class="lbl">${c.lbl}</div>
+      <div class="num mono">${c.num}<small> ${c.unit}</small></div><div class="sub">${c.sub}</div></div>`).join("")}
+  </div>
+  <div class="grid g3" style="grid-template-columns:1.35fr 1fr 1fr">
+    <div class="card reveal" style="animation-delay:300ms">
+      <div class="hd"><h3>🗓️ 今日课程 · 邀约进度</h3>
+        <button class="btn sm ghost" onclick="go('classes')">排课考勤 →</button></div>
+      <div class="bd" style="padding:14px">
+        ${today.length?today.map(lessonCardHTML).join(""):`<div class="blank"><div class="big">🌿</div>今天没有排课，去「排课与考勤」新建班次吧</div>`}
+        ${tomorrow.length?`<div style="font-size:12px;color:var(--ink2);margin:8px 0 6px">明日 ${tomorrow.length} 个班次：</div>`+tomorrow.map(lessonCardHTML).join(""):""}
+      </div>
+    </div>
+    <div class="card reveal" style="animation-delay:380ms">
+      <div class="hd"><h3>🚨 续费预警 <span style="font-size:12px;color:var(--ink2);font-weight:400">剩余金额 ≤ ¥${Number(DB.org.amountThreshold).toFixed(0)} 预警</span></h3><button class="btn sm ghost" onclick="go('students')">查看学员 →</button></div>
+      <div class="bd" style="padding:6px 16px">
+        ${renew.length?renew.map(s=>{
+          const rem=studentTotalRemaining(s.id);
+          return `<div class="li-item"><span class="avatar" style="background:${avColor(s.name)}">${esc(s.name[0])}</span>
+            <div class="main"><div style="font-weight:700">${esc(s.name)} <span class="badge-warn">需续费</span></div>
+            <div class="sub">${s.phone} · 剩余金额 <b style="color:var(--red)">¥${fmtFen(rem.amount)}</b> / ${rem.lessons} 课时</div></div>
+            <button class="btn sm sun" onclick="openStudent(${JSON.stringify(s.id)})">详情</button></div>`;
+        }).join(""):`<div class="blank"><div class="big">🎉</div>暂无学员剩余金额 ≤ ¥${Number(DB.org.amountThreshold).toFixed(0)}</div>`}
+      </div>
+    </div>
+    <div class="card reveal" style="animation-delay:460ms">
+      <div class="hd"><h3>🧾 最近操作留痕</h3><button class="btn sm ghost" onclick="go('settings')">审计日志 →</button></div>
+      <div class="bd" style="padding:6px 16px">
+        ${recent.length?recent.map(l=>`<div class="li-item"><div class="main">
+          <div>${esc(l.op)} <span style="color:var(--ink2);font-weight:400">· ${esc(l.detail)}</span></div>
+          <div class="sub">${l.time} · ${esc(l.operator)}</div></div></div>`).join(""):`<div class="blank">暂无操作记录</div>`}
+      </div>
+    </div>
+  </div>`;
+}
+function lessonCardHTML(cls){
+  const invs=classInvites(cls.id);
+  const total=invs.length;
+  const confirmed=invs.filter(i=>i.status==="已确认"||i.status==="已到课").length;
+  const invited=invs.filter(i=>i.status==="已邀约").length;
+  const none=invs.filter(i=>i.status==="未邀约").length;
+  const pct=total?Math.round(confirmed/total*100):0;
+  const done=DB.consumptions.some(c=>c.classId===cls.id);
+  const d=parseDate(cls.date); const isPast=cls.date<todayStr();
+  return `<div class="lesson-card" style="margin-bottom:10px">
+    <div class="datebar"><span class="d">${d?d.getDate():""}</span><span class="m">${d?(d.getMonth()+1)+"月":""}</span><span class="w">${weekCN(cls.date)}</span></div>
+    <div class="body">
+      <div class="t">${esc(cls.name)} ${done?'<span class="stamp green">已核销</span>':(isPast?'<span class="stamp">待补录</span>':"")}
+        ${!isPast&&!done&&none>0?`<span class="badge-warn">${none}人未邀约</span>`:""}</div>
+      <div class="meta"><span>🕐 ${cls.start}-${cls.end}</span><span>📍 ${esc(cls.location||"营地")}</span><span>👩‍🏫 ${esc(cls.teacher||"—")}</span><span>🎯 ${esc(cls.unitName)}</span></div>
+      <div class="inv"><span class="progress-label">邀约 ${confirmed}/${total}</span>
+        <div class="pbar"><i style="width:${pct}%"></i></div>
+        <span class="progress-label">已邀约${invited} · 未邀约${none}</span></div>
+    </div>
+    <div class="acts">
+      <button class="btn sm sun" onclick="openClassInvite('${cls.id}')">📣 邀约学员</button>
+      <button class="btn sm ${done?"ghost":"ember"}" onclick="openAttendance('${cls.id}')" ${done?"disabled":""}>${done?"已核销":"✅ 考勤消课"}</button>
+    </div>
+  </div>`;
+}
+
+/* ---------------- 学员档案 ---------------- */
+function pageStudents(){
+  const q=(FILTER.q||"").toLowerCase();
+  const rows=DB.students.filter(s=>!q||s.name.toLowerCase().includes(q)||s.phone.includes(q));
+  const curStudent=()=>FILTER.sid?DB.students.find(s=>s.id===FILTER.sid):null;
+  if(curStudent()){ renderStudentDetail(curStudent()); return; }
+  topbar("学员档案","学员 · 批量导入 · 档案详情",`
+    <input placeholder="🔍 搜索姓名 / 手机号" value="${esc(FILTER.q||"")}" style="width:190px"
+      oninput="FILTER.q=this.value;renderStudentsTable()" onkeydown="if(event.key==='Enter')this.blur()">
+    ${can("student_edit")?`<button class="btn" onclick="openStudentModal()">＋ 新增学员</button>`:""}
+    ${can("import_students")?`<button class="btn ghost" onclick="openImport('students')">⬆ 批量导入</button>`:""}
+    <button class="btn ghost" onclick="downloadTemplate('students')">模板下载</button>`);
+  renderStudentsTable();
+}
+function renderStudentsTable(){
+  const q=(FILTER.q||"").toLowerCase();
+  const rows=DB.students.filter(s=>!q||s.name.toLowerCase().includes(q)||s.phone.includes(q));
+  $("view").innerHTML=`
+  <div class="card">
+    <div class="tablewrap"><table class="tbl">
+      <thead><tr><th>学员</th><th>联系电话</th><th>性别/出生</th><th>校区</th><th>学校·年级</th><th>来源</th>
+        <th>在读单元</th><th>剩余课时</th><th>剩余金额</th><th>状态</th><th style="width:150px">操作</th></tr></thead>
+      <tbody>
+      ${rows.length?rows.map(s=>{
+        const accs=accountsOfStudent(s.id);
+        const rem={lessons:sum(accs.map(a=>a.acc.remainingLessons)),amount:sum(accs.map(a=>a.acc.remainingAmount))};
+        const warn=needsRenew(s.id);
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:9px"><span class="avatar" style="background:${avColor(s.name)}">${esc(s.name[0])}</span>
+            <div><div style="font-weight:700">${esc(s.name)}</div><div style="font-size:11.5px;color:var(--ink2)">${s.id}</div></div></div></td>
+          <td class="mono" title="${esc(s.phone)}">${esc(DB.org.phoneMask?maskPhone(s.phone):s.phone)}</td>
+          <td>${esc(s.gender||"—")} · ${fmtDate(s.birthday)}</td>
+          <td>${esc(s.campus||"—")}</td>
+          <td>${esc(s.school||"—")}<div style="font-size:11.5px;color:var(--ink2)">${esc(s.grade||"")}</div></td>
+          <td>${esc(s.source||"—")}</td>
+          <td>${accs.filter(a=>a.acc.remainingLessons>0).length} 个</td>
+          <td class="mono" style="font-weight:700">${rem.lessons} 节</td>
+          <td class="mono" style="font-weight:700">¥${fmtFen(rem.amount)}</td>
+          <td>${warn?`<span class="badge-warn">需续费</span>`:`<span class="tag pine">在读</span>`}</td>
+          <td><button class="btn sm sun" onclick="openStudent('${s.id}')">详情</button>
+              <button class="btn sm ghost" onclick="openStudentModal('${s.id}')">编辑</button>
+              <button class="btn sm red" onclick="delStudent('${s.id}')">删</button></td>
+        </tr>`;
+      }).join(""):`<tr><td colspan="11"><div class="blank"><div class="big">🎒</div>暂无学员，点右上角「新增学员」或「批量导入」</div></td></tr>`}
+      </tbody>
+    </table></div>
+  </div>`;
+}
+function openStudentModal(id){
+  const s=id?DB.students.find(x=>x.id===id):{};
+  const f=o=>s[o]!=null?s[o]:"";
+  openModal(`
+    <div class="mhd"><h3>${id?"编辑学员":"新增学员"}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2">
+        <div class="frow"><label>姓名 <span class="req">*</span></label><input id="s_name" value="${esc(f("name"))}" placeholder="学员姓名"></div>
+        <div class="frow"><label>联系电话 <span class="req">*</span></label><input id="s_phone" value="${esc(f("phone"))}" placeholder="手机号/座机均可"></div>
+      </div>
+      <div class="f2">
+        <div class="frow"><label>用户编号</label><input id="s_memberno" value="${esc(f("memberNo"))}" placeholder="如：STU-0001（选填）"></div>
+        <div class="frow"><label>校区 <span class="req">*</span></label><input id="s_campus" value="${esc(f("campus"))}" placeholder="如：城西校区 / 滨江校区"></div>
+      </div>
+      <div class="f2">
+        <div class="frow"><label>性别</label><select id="s_gender">
+          <option value="" ${f("gender")===""?"selected":""}>—</option>
+          <option value="男" ${f("gender")==="男"?"selected":""}>男</option>
+          <option value="女" ${f("gender")==="女"?"selected":""}>女</option></select></div>
+        <div class="frow"><label>出生日期</label><input id="s_birthday" type="date" value="${esc(f("birthday"))}"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>学校</label><input id="s_school" value="${esc(f("school"))}"></div>
+        <div class="frow"><label>年级</label><input id="s_grade" value="${esc(f("grade"))}"></div>
+        <div class="frow"><label>来源渠道</label><input id="s_source" value="${esc(f("source"))}" placeholder="地推/老带新/公众号"></div>
+      </div>
+      ${cfInputs(s, f)}
+      <div class="frow"><label>备注</label><textarea id="s_note" rows="2">${esc(f("note"))}</textarea></div>
+      <div class="hint">用户编号/自定义字段（如意向科目）可在「设置与数据 → 自定义字段」中管理；产品关联以「收费记录」为准。联系电话格式不强制校验。</div>
+    </div></div>
+    <div class="mft">
+      <button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn" onclick="saveStudent('${id||""}')">保存档案</button>
+    </div>`);
+  if(id) $("s_phone").readOnly=true;
+}
+function saveStudent(id){
+  const name=$("s_name").value.trim(), phone=$("s_phone").value.trim();
+  if(!name) return toast("请填写姓名","err");
+  if(!/^[0-9\-]{5,20}$/.test(phone)) return toast("联系电话格式不正确（5-20位数字，可含-）","err");
+  if(DB.students.some(s=>s.phone===phone && s.id!==id)) return toast("联系电话已存在，请勿重复建档","err");
+  const extra={};
+  (DB.customFields||[]).forEach(x=>{ const el=$("cf_"+x.key); if(el) extra[x.key]=el.value.trim(); });
+  if(id){
+    const s=DB.students.find(x=>x.id===id);
+    Object.assign(s,{name,phone,memberNo:$("s_memberno").value.trim(),campus:$("s_campus").value.trim(),
+      gender:$("s_gender").value,birthday:$("s_birthday").value,school:$("s_school").value.trim(),
+      grade:$("s_grade").value.trim(),source:$("s_source").value.trim(),note:$("s_note").value.trim()},extra);
+    log("编辑学员", name);
+  }else{
+    DB.students.push({id:uid(),name,phone,memberNo:$("s_memberno").value.trim(),campus:$("s_campus").value.trim(),
+      gender:$("s_gender").value,birthday:$("s_birthday").value,
+      school:$("s_school").value.trim(),grade:$("s_grade").value.trim(),source:$("s_source").value.trim(),
+      note:$("s_note").value.trim(),createdAt:nowTxt()},extra);
+    log("新增学员", name);
+  }
+  saveDB(); maskClose(); pageStudents(); toast(id?"档案已更新 ✓":"学员已建档 ✓","ok");
+}
+function delStudent(id){
+  const s=DB.students.find(x=>x.id===id); if(!s) return;
+  const hasPay=DB.payments.some(p=>p.studentId===id)||DB.consumptions.some(c=>c.studentId===id);
+  ask("删除学员","确认删除学员 <b>"+esc(s.name)+"</b> ？"+(hasPay?"<br><span style='color:var(--red)'>该学员已有收费/课消记录，删除将一并清除其关联流水（建议仅用于误建档）。</span>":"") ,()=>{
+    DB.students=DB.students.filter(x=>x.id!==id);
+    DB.payments=DB.payments.filter(x=>x.studentId!==id);
+    DB.refunds=DB.refunds.filter(x=>x.studentId!==id);
+    DB.consumptions=DB.consumptions.filter(x=>x.studentId!==id);
+    DB.invites=DB.invites.filter(x=>x.studentId!==id);
+    log("删除学员", s.name);
+    saveDB(); pageStudents(); toast("已删除","ok");
+  });
+}
+function openStudent(id){
+  FILTER.sid=id; renderPage();
+}
+function renderStudentDetail(s){
+  const accs=accountsOfStudent(s.id);
+  const pays=DB.payments.filter(p=>p.studentId===s.id);
+  const refs=DB.refunds.filter(r=>r.studentId===s.id);
+  const cons=DB.consumptions.filter(c=>c.studentId===s.id);
+  const rem={lessons:sum(accs.map(a=>a.acc.remainingLessons)),amount:sum(accs.map(a=>a.acc.remainingAmount))};
+  topbar("学员详情","学员档案 · 聚合视图",`
+    <button class="btn ghost" onclick="FILTER.sid=null;renderPage()">← 返回列表</button>
+    ${can("student_edit")?`<button class="btn" onclick="openStudentModal('${s.id}')">编辑档案</button>`:""}
+    ${can("charge")?`<button class="btn ember" onclick="go('finance')">为其收费</button>`:""}
+    ${can("refund_request")?`<button class="btn red" onclick="openRefundFor('${s.id}')">为其退费</button>`:""}`);
+  $("view").innerHTML=`
+  <div class="grid g2" style="grid-template-columns:320px 1fr;align-items:start">
+    <div class="card">
+      <div class="bd" style="padding:24px;text-align:center">
+        <span class="avatar" style="width:64px;height:64px;font-size:28px;border-radius:18px;background:${avColor(s.name)}">${esc(s.name[0])}</span>
+        <h3 style="font-family:var(--disp);font-size:22px;margin:12px 0 4px;color:var(--pine2)">${esc(s.name)}</h3>
+        <div style="color:var(--ink2);font-size:13px">${esc(s.gender||"—")} · ${fmtDate(s.birthday)} ${needsRenew(s.id)?'<span class="badge-warn">需续费</span>':""}</div>
+        <div class="divider"></div>
+        <div class="dl"><span>联系电话</span><b class="mono" title="点击复制" style="cursor:pointer" onclick="copyText(${JSON.stringify(s.phone)}).then(()=>{})">${esc(s.phone)}</b></div>
+        <div class="dl"><span>用户编号</span><b class="mono">${esc(s.memberNo||"—")}</b></div>
+        <div class="dl"><span>校区</span><b>${esc(s.campus||"—")}</b></div>
+        <div class="dl"><span>学校 / 年级</span><b>${esc(s.school||"—")} ${esc(s.grade||"")}</b></div>
+        <div class="dl"><span>来源渠道</span><b>${esc(s.source||"—")}</b></div>
+        ${(DB.customFields||[]).map(x=>`<div class="dl"><span>${esc(x.label)}</span><b>${esc(s[x.key]||"—")}</b></div>`).join("")}
+        <div class="dl"><span>备注</span><b>${esc(s.note||"—")}</b></div>
+        <div class="divider"></div>
+        <div class="grid g2" style="grid-template-columns:1fr 1fr">
+          <div class="kpi sun" style="padding:14px"><div class="lbl">剩余课时</div><div class="num" style="font-size:26px">${rem.lessons}<small> 节</small></div></div>
+          <div class="kpi ember" style="padding:14px"><div class="lbl">剩余金额</div><div class="num" style="font-size:26px">${fmtFen(rem.amount)}<small> 元</small></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px">
+      <div class="card">
+        <div class="hd"><h3>📦 报读产品账户（购买 / 剩余 / 课消）</h3>
+          <button class="btn sm ghost" onclick="go('finance')">＋ 收费</button>
+          ${can("charge")?`<button class="btn sm ghost" onclick="go('finance')">＋ 收费</button>`:""}
+          ${can("refund_request")?`<button class="btn sm red" onclick="openRefundFor('${s.id}')">退费</button>`:""}</div>
+        <div class="tablewrap"><table class="tbl">
+          <thead><tr><th>产品（单元）</th><th>购买课时</th><th>实付金额</th><th>已消课时</th><th>已消金额</th><th>剩余课时</th><th>待消金额</th><th>课消单价</th></tr></thead>
+          <tbody>
+          ${accs.length?accs.map(a=>`<tr>
+            <td><div style="font-weight:700">${esc(a.info.name)}</div>
+              <div style="font-size:11.5px;color:var(--ink2)">${a.key}</div></td>
+            <td class="mono">${a.acc.totalLessons}</td><td class="mono">¥${fmtFen(a.acc.totalAmount)}</td>
+            <td class="mono">${a.acc.consumedLessons}</td><td class="mono">¥${fmtFen(a.acc.consumedAmount)}</td>
+            <td class="mono" style="font-weight:700">${a.acc.remainingLessons}</td>
+            <td class="mono" style="font-weight:700;color:${a.acc.remainingAmount>0&&a.acc.remainingAmount<=yuan2fen(DB.org.amountThreshold)?"var(--red)":"var(--ink)"}">¥${fmtFen(a.acc.remainingAmount)}</td>
+            <td class="mono">¥${fmtFen(a.acc.unitPrice)}/节</td>
+          </tr>`).join(""):`<tr><td colspan="8"><div class="blank">尚未报读产品，请先「收费」</div></td></tr>`}
+          </tbody>
+        </table></div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="hd"><h3>📖 上课记录（课消明细）</h3></div>
+          <div class="tablewrap" style="max-height:280px"><table class="tbl">
+            <thead><tr><th>日期</th><th>产品</th><th>课时</th><th>金额</th><th>方式</th></tr></thead>
+            <tbody>${cons.length?cons.slice().sort((a,b)=>a.date<b.date?1:-1).map(c=>`<tr>
+              <td class="mono">${c.date}</td><td>${esc(c.unitName)}</td>
+              <td class="mono">${c.lessons}</td><td class="mono">¥${fmtFen(c.amount)}</td>
+              <td>${c.source==="attendance"?'<span class="tag pine">考勤</span>':'<span class="tag sky">手动</span>'}</td></tr>`).join(""):`<tr><td colspan="5"><div class="blank">暂无课消记录</div></td></tr>`}
+            </tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="hd"><h3>💰 资金流水（收费/退费）</h3></div>
+          <div class="tablewrap" style="max-height:280px"><table class="tbl">
+            <thead><tr><th>日期</th><th>类型</th><th>产品</th><th>金额</th><th>方式</th></tr></thead>
+            <tbody>
+            ${pays.map(p=>`<tr><td class="mono">${p.date}</td><td><span class="tag pine">收费</span></td>
+              <td>${esc(p.name)}</td><td class="mono">+¥${fmtFen(p.amount)}</td><td>${esc(p.method)}</td></tr>`).join("")}
+            ${refs.filter(r=>r.status==="approved").map(r=>`<tr class="red"><td class="mono">${r.approvedAt.slice(0,10)}</td><td><span class="tag ember">退费</span></td>
+              <td>${esc(r.unitName)}</td><td class="mono">-¥${fmtFen(r.amount)}</td><td>${esc(r.reason||"")}</td></tr>`).join("")}
+            ${!pays.length&&!refs.length?`<tr><td colspan="5"><div class="blank">暂无流水</div></td></tr>`:""}
+            </tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- 产品管理 ---------------- */
+function pageProducts(){
+  topbar("产品管理","单品 · 组合套餐 · 金额拆分",`
+    ${can("product_edit")?`<button class="btn" onclick="openSingleModal()">＋ 新增单品</button>`:""}
+    ${can("product_edit")?`<button class="btn ember" onclick="openComboModal()">＋ 新增套餐</button>`:""}`);
+  const singles=DB.singles, combos=DB.combos;
+  const usedSingle=id=>DB.payments.some(p=>p.type==="single"&&p.productId===id)||DB.combos.some(c=>c.items.some(i=>i.singleId===id));
+  const usedCombo=id=>DB.payments.some(p=>p.type==="combo"&&p.productId===id);
+  $("view").innerHTML=`
+  <div class="note green" style="margin-bottom:16px">🧭 <b>课消核算基准：</b>单品按「实收金额/课时数」计课消单价；套餐按子产品<b>拆分金额/课时数</b>计课消单价。例：美术+书法套餐2000元（各30节、各拆1000元），上1节美术课消 = 1000÷30 ≈ 33.33元。</div>
+  <div class="grid g2" style="grid-template-columns:1fr 1.2fr">
+    <div class="card">
+      <div class="hd"><h3>🎨 单品产品</h3></div>
+      <div class="tablewrap"><table class="tbl">
+        <thead><tr><th>产品</th><th>科目</th><th>原价(元)</th><th>课时</th><th>有效期(月)</th><th>课消单价</th><th>操作</th></tr></thead>
+        <tbody>
+        ${singles.map(s=>`<tr>
+          <td><b>${esc(s.name)}</b>${s.note?`<div style="font-size:11.5px;color:var(--ink2)">${esc(s.note)}</div>`:""}</td>
+          <td>${esc(s.subject)}</td><td class="mono">${s.listPrice}</td><td class="mono">${s.totalLessons}</td>
+          <td class="mono">${s.validity}</td>
+          <td class="mono" style="font-weight:700">¥${fmtFen(yuan2fen(s.listPrice)/s.totalLessons)}</td>
+          <td>${can("product_edit")?`<button class="btn sm ghost" onclick="openSingleModal('${s.id}')">编辑</button>
+              ${usedSingle(s.id)?`<span class="tag gray">已使用</span>`:`<button class="btn sm red" onclick="delSingle('${s.id}')">删</button>`}`:`<span class="tag gray">只读</span>`}</td>
+        </tr>`).join("")||`<tr><td colspan="7"><div class="blank"><div class="big">🎨</div>暂无单品</div></td></tr>`}
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="hd"><h3>🧩 组合套餐（自动按原价比例拆分 / 手动指定金额）</h3></div>
+      <div class="tablewrap"><table class="tbl">
+        <thead><tr><th>套餐</th><th>子产品拆分</th><th>售价(元)</th><th>操作</th></tr></thead>
+        <tbody>
+        ${combos.map(c=>{
+          const sub=c.items.map(it=>{
+            const s=DB.singles.find(x=>x.id===it.singleId);
+            return `<div style="font-size:12px;color:var(--ink2)">${esc(s?s.name:"?")}：${it.lessons}节 × ¥${it.amount}（单价¥${(it.amount/it.lessons).toFixed(2)}）</div>`;
+          }).join("");
+          return `<tr><td><b>${esc(c.name)}</b>${c.note?`<div style="font-size:11.5px;color:var(--ink2)">${esc(c.note)}</div>`:""}</td>
+          <td style="line-height:1.9">${sub}</td><td class="mono" style="font-weight:700">${c.price}</td>
+          <td>${can("product_edit")?`<button class="btn sm ghost" onclick="openComboModal('${c.id}')">编辑</button>
+              ${usedCombo(c.id)?`<span class="tag gray">已售卖</span>`:`<button class="btn sm red" onclick="delCombo('${c.id}')">删</button>`}`:`<span class="tag gray">只读</span>`}</td></tr>`;
+        }).join("")||`<tr><td colspan="4"><div class="blank"><div class="big">🧩</div>暂无套餐</div></td></tr>`}
+        </tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+function openSingleModal(id){
+  const s=id?DB.singles.find(x=>x.id===id):{};
+  const f=o=>s[o]!=null?s[o]:"";
+  openModal(`
+    <div class="mhd"><h3>${id?"编辑单品":"新增单品"}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2"><div class="frow"><label>产品名称 <span class="req">*</span></label><input id="p_name" value="${esc(f("name"))}" placeholder="如：营地攀岩"></div>
+      <div class="frow"><label>科目</label><input id="p_subject" value="${esc(f("subject"))}" placeholder="如：运动/美术/编程"></div></div>
+      <div class="f3">
+        <div class="frow"><label>原价（元/期）<span class="req">*</span></label><input id="p_price" type="number" min="0" step="0.01" value="${f("listPrice")||""}"></div>
+        <div class="frow"><label>总课时数 <span class="req">*</span></label><input id="p_lessons" type="number" min="1" value="${f("totalLessons")||""}"></div>
+        <div class="frow"><label>有效期（月）</label><input id="p_validity" type="number" min="1" value="${f("validity")||6}"></div>
+      </div>
+      <div class="frow"><label>备注</label><input id="p_note" value="${esc(f("note"))}"></div>
+      <div class="hint">课消单价 = 实收金额 ÷ 课时数。若学员购买时打折，实收不同则单价不同，系统按实际实收核算。</div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn" onclick="saveSingle('${id||""}')">保存</button></div>`);
+}
+function saveSingle(id){
+  const name=$("p_name").value.trim(), price=parseFloat($("p_price").value), lessons=parseInt($("p_lessons").value);
+  if(!name) return toast("请填写产品名称","err");
+  if(!(price>0)) return toast("请填写原价","err");
+  if(!(lessons>0)) return toast("请填写总课时数","err");
+  if(id){
+    const s=DB.singles.find(x=>x.id===id);
+    Object.assign(s,{name,subject:$("p_subject").value.trim(),listPrice:price,totalLessons:lessons,validity:parseInt($("p_validity").value)||6,note:$("p_note").value.trim()});
+    log("编辑单品", name);
+  }else{
+    DB.singles.push({id:uid(),name,subject:$("p_subject").value.trim(),listPrice:price,totalLessons:lessons,validity:parseInt($("p_validity").value)||6,note:$("p_note").value.trim(),createdAt:nowTxt()});
+    log("新增单品", name);
+  }
+  saveDB(); maskClose(); pageProducts(); toast("产品已保存 ✓","ok");
+}
+function delSingle(id){
+  const s=DB.singles.find(x=>x.id===id); if(!s) return;
+  ask("删除单品","确认删除单品 <b>"+esc(s.name)+"</b>？<br><span style='color:var(--red)'>已被套餐引用或已售卖的产品不可删除。</span>",()=>{
+    if(usedSingleCheck(id)) return;
+    DB.singles=DB.singles.filter(x=>x.id!==id);
+    log("删除单品", s.name); saveDB(); pageProducts(); toast("已删除","ok");
+  });
+}
+const usedSingleCheck=id=>DB.payments.some(p=>p.type==="single"&&p.productId===id)||DB.combos.some(c=>c.items.some(i=>i.singleId===id));
+function delCombo(id){
+  const c=DB.combos.find(x=>x.id===id); if(!c) return;
+  ask("删除套餐","确认删除套餐 <b>"+esc(c.name)+"</b>？<br><span style='color:var(--red)'>已售卖的套餐不可删除。</span>",()=>{
+    if(DB.payments.some(p=>p.type==="combo"&&p.productId===id)) return toast("该套餐已售卖，不可删除","err");
+    DB.combos=DB.combos.filter(x=>x.id!==id);
+    log("删除套餐", c.name); saveDB(); pageProducts(); toast("已删除","ok");
+  });
+}
+function openComboModal(id){
+  const c=id?DB.combos.find(x=>x.id===id):null;
+  TMP.combo=c?JSON.parse(JSON.stringify(c)):{id:"",name:"",price:"",items:[],note:""};
+  renderComboModal();
+}
+function renderComboModal(){
+  const c=TMP.combo;
+  const itemRows=c.items.map((it,idx)=>{
+    const s=DB.singles.find(x=>x.id===it.singleId);
+    const gift=!(it.amount>0.001);
+    const unit=it.lessons>0?((it.amount/it.lessons).toFixed(2)):"—";
+    return `<div class="f3" style="grid-template-columns:1.4fr 1fr 1fr 0.6fr;align-items:end">
+      <div class="frow"><label>子产品</label><select onchange="TMP.combo.items[${idx}].singleId=this.value;renderComboModal()">
+        ${DB.singles.map(sg=>`<option value="${sg.id}" ${sg.id===it.singleId?"selected":""}>${esc(sg.name)}（${sg.totalLessons}节/¥${sg.listPrice}）</option>`).join("")}
+      </select></div>
+      <div class="frow"><label>课时数</label><input type="number" min="1" value="${it.lessons}" oninput="TMP.combo.items[${idx}].lessons=parseInt(this.value)||1"></div>
+      <div class="frow"><label>拆分金额(元)</label><input type="number" min="0" step="0.01" value="${it.amount}" oninput="TMP.combo.items[${idx}].amount=parseFloat(this.value)||0"></div>
+      <div><button class="btn sm red" onclick="TMP.combo.items.splice(${idx},1);renderComboModal()">移除</button></div>
+      <div class="hint" style="grid-column:1/-1;margin-top:-6px">${gift?'<b style="color:var(--ember)">🎁 赠送子产品（课消金额为0，课消单价0元/节）</b>':'课消单价：¥'+unit+'/节'}</div>
+    </div>`;
+  }).join("");
+  const itemSum=c.items.reduce((a,i)=>a+(i.amount||0),0);
+  const priceVal=parseFloat(c.price)||0;
+  const diff=priceVal-itemSum;
+  openModal(`
+    <div class="mhd"><h3>${TMP.combo._id?"编辑套餐":"新增套餐"} · 金额拆分</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2"><div class="frow"><label>套餐名称 <span class="req">*</span></label>
+        <input id="c_name" value="${esc(c.name)}" placeholder="如：美术+书法联报" oninput="TMP.combo.name=this.value"></div>
+      <div class="frow"><label>套餐售价(元) <span class="req">*</span></label>
+        <input id="c_price" type="number" min="0" step="0.01" value="${c.price}" placeholder="如：2000" oninput="TMP.combo.price=parseFloat(this.value)||0"></div></div>
+      <div class="frow"><label>子产品拆分（金额填 0 = 🎁 赠送子产品，课消金额为0）</label></div>
+      <div id="comboItems" style="display:grid;gap:10px">${itemRows||`<div class="blank" style="padding:20px">先添加子产品</div>`}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn sm ghost" onclick="TMP.combo.items.push({singleId:DB.singles[0]?DB.singles[0].id:'',lessons:20,amount:0});renderComboModal()">＋ 添加子产品</button>
+        <button class="btn sm sun" onclick="autoSplit()">⚖ 按原价比例自动拆分</button>
+      </div>
+      <div class="note" id="splitCheck" style="font-size:12px">
+        当前售价 <b>¥${priceVal.toFixed(2)}</b>，拆分合计 <b>¥${itemSum.toFixed(2)}</b>，差额 <b style="color:${Math.abs(diff)>0.005?"var(--red)":"var(--ok)"}">¥${diff.toFixed(2)}</b>
+        ${Math.abs(diff)>0.005?"（保存前需将差额补齐为0）":""}
+      </div>
+      <div class="frow"><label>备注</label><input value="${esc(c.note)}" oninput="TMP.combo.note=this.value"></div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn" onclick="saveCombo()">保存套餐</button></div>`);
+  TMP.combo._id=TMP.combo._id||"";
+}
+function autoSplit(){
+  const c=TMP.combo; const price=parseFloat(c.price)||0;
+  if(!c.items.length) return toast("请先添加子产品","err");
+  const bases=c.items.map(it=>{ const s=DB.singles.find(x=>x.id===it.singleId); return s?s.listPrice:0; });
+  const baseSum=sum(bases);
+  if(baseSum<=0) return toast("子产品原价合计为0，无法按比例拆分","err");
+  c.items.forEach((it,i)=>{ const s=DB.singles.find(x=>x.id===it.singleId);
+    it.lessons=s?s.totalLessons:it.lessons; it.amount=Math.round(price*bases[i]/baseSum*100)/100; });
+  renderComboModal(); toast("已按原价比例自动拆分 ✓","ok");
+}
+function saveCombo(){
+  const c=TMP.combo;
+  if(!c.name.trim()) return toast("请填写套餐名称","err");
+  if(!(parseFloat(c.price)>0)) return toast("请填写套餐售价","err");
+  if(!c.items.length) return toast("请至少添加一个子产品","err");
+  const s=sum(c.items.map(i=>i.amount||0));
+  if(Math.abs(s-parseFloat(c.price))>0.005) return toast("拆分金额合计必须等于套餐售价（差额 ¥"+Math.abs((s-parseFloat(c.price))).toFixed(2)+"）","err");
+  if(c.items.some(i=>!i.singleId||!(i.lessons>0))) return toast("子产品与课时数不能为空","err");
+  const itemSum2=sum(c.items.map(i=>(i.amount||0)));
+  if(itemSum2<=0) return toast("拆分金额合计不能为0（赠品金额可为0，但需至少一个子产品金额>0）","err");
+  const now=nowTxt();
+  if(c._id){
+    const old=DB.combos.find(x=>x.id===c._id);
+    Object.assign(old,{name:c.name.trim(),price:parseFloat(c.price),items:c.items,note:c.note});
+    log("编辑套餐", c.name);
+  }else{
+    DB.combos.push({id:uid(),name:c.name.trim(),price:parseFloat(c.price),items:c.items,note:c.note,createdAt:now});
+    log("新增套餐", c.name);
+  }
+  saveDB(); maskClose(); pageProducts(); toast("套餐已保存 ✓","ok");
+}
+
+/* ---------------- 收费与退费 ---------------- */
+function pageFinance(){
+  topbar("收费与退费","资金流入 · 退费审核 · 红字回滚",`
+    ${can("charge")?`<button class="btn" onclick="openChargeModal()">＋ 收费录入</button>`:""}
+    ${can("import_payments")?`<button class="btn ghost" onclick="openImport('payments')">⬆ 批量收费</button>`:""}
+    ${can("refund_request")?`<button class="btn" onclick="openRefundSearch()">− 单笔退费</button>
+    <button class="btn ghost" onclick="openImport('refunds')">⬆ 批量退费</button>`:""}
+    <button class="btn ghost" onclick="downloadTemplate('payments')">模板下载</button>`);
+  const pend=DB.refunds.filter(r=>r.status==="pending");
+  const rows=reportMoneyRows();
+  const totalIn=sum(rows.filter(r=>r.type==="收费").map(r=>r.amount));
+  const totalOut=sum(rows.filter(r=>r.type==="退费").map(r=>r.amount));
+  const net=totalIn+totalOut;
+  $("view").innerHTML=`
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card kpi"><span class="deco">💵</span><div class="lbl">累计实收</div><div class="num mono">${fmtFen(totalIn)}<small> 元</small></div><div class="sub">${DB.payments.length} 笔收费</div></div>
+    <div class="card kpi ember"><span class="deco">🔻</span><div class="lbl">累计退费</div><div class="num mono">${fmtFen(-totalOut)}<small> 元</small></div><div class="sub">已通过 ${DB.refunds.filter(r=>r.status==="approved").length} 笔</div></div>
+    <div class="card kpi sky"><span class="deco">🧾</span><div class="lbl">净流入</div><div class="num mono">${fmtFen(net)}<small> 元</small></div><div class="sub">实收 - 退费</div></div>
+    <div class="card kpi sun"><span class="deco">⏳</span><div class="lbl">待审核退费</div><div class="num mono">${pend.length}<small> 笔</small></div><div class="sub">合计 ¥${fmtFen(sum(pend.map(p=>p.amount)))}</div></div>
+  </div>
+  ${pend.length?`<div class="card" style="margin-bottom:16px;border-color:var(--ember)">
+    <div class="hd"><h3 style="color:var(--red)">⏳ 退费待审核（审核通过后自动回滚剩余课时与金额）</h3></div>
+    <div class="tablewrap"><table class="tbl">
+      <thead><tr><th>学员</th><th>产品单元</th><th>剩余课时</th><th>剩余金额</th><th>手续费</th><th>应退金额</th><th>退款方式</th><th>校区/销售</th><th>原因</th><th>申请时间</th><th>操作</th></tr></thead>
+      <tbody>${pend.map(r=>`<tr>
+        <td><b>${esc(studentName(r.studentId))}</b></td><td>${esc(r.unitName)}</td>
+        <td class="mono">${r.lessons}</td><td class="mono">¥${fmtFen(computeAccount(r.studentId,r.unitKey).remainingAmount)}</td>
+        <td class="mono">¥${fmtFen(r.fee)}</td>
+        <td class="mono" style="font-weight:700;color:var(--red)">¥${fmtFen(r.amount)}</td>
+        <td>${esc(r.method)||"—"}</td><td>${esc(r.campus)||"—"}/${esc(r.sales)||"—"}</td>
+        <td>${esc(r.reason||"—")}</td><td class="mono">${r.createdAt}</td>
+        <td>${can("refund_approve")?`<button class="btn sm ember" onclick="approveRefund('${r.id}');pageFinance()">✓ 审核通过</button>
+            <button class="btn sm ghost" onclick="rejectRefund('${r.id}');pageFinance()">驳回</button>`:`<span style="font-size:12px;color:var(--ink2)">待校长/管理员审批</span>`}</td></tr>`).join("")}
+      </tbody></table></div></div>`:""}
+  <div class="card">
+    <div class="hd"><h3>🧾 资金流水（收费 + 已通过退费红字）</h3></div>
+    <div class="tablewrap" style="max-height:520px"><table class="tbl">
+      <thead><tr><th>日期</th><th>类型</th><th>学员</th><th>产品</th><th>金额</th><th>支付方式</th><th>校区</th><th>销售</th><th>操作人</th><th>备注</th></tr></thead>
+      <tbody>${rows.slice().reverse().map(r=>`
+        <tr class="${r.type==="退费"?"red":""}">
+          <td class="mono">${r.date}</td><td>${r.type==="收费"?'<span class="tag pine">收费</span>':'<span class="tag ember">退费</span>'}</td>
+          <td><b>${esc(studentName(r.studentId))}</b></td><td>${esc(r.name)}</td>
+          <td class="mono" style="font-weight:700">${r.amount>=0?"+":"-"}¥${fmtFen(Math.abs(r.amount))}</td>
+          <td>${esc(r.method)||"—"}</td><td>${esc(r.campus)||"—"}</td><td>${esc(r.sales)||"—"}</td>
+          <td>${esc(r.operator)||"—"}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(r.note)}</td>
+        </tr>`).join("")||`<tr><td colspan="10"><div class="blank"><div class="big">💰</div>暂无流水</div></td></tr>`}
+      </tbody></table></div>
+  </div>`;
+}
+function openChargeModal(){
+  openModal(`
+    <div class="mhd"><h3>收费录入</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2">
+        <div class="frow"><label>学员 <span class="req">*</span></label>
+          <select id="ch_student"><option value="">— 选择学员 —</option>
+          ${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)}（${esc(s.phone)}）</option>`).join("")}</select></div>
+        <div class="frow"><label>购买产品 <span class="req">*</span></label>
+          <select id="ch_product" onchange="chargePreview()"><option value="">— 选择单品或套餐 —</option>
+          <optgroup label="单品">${DB.singles.map(s=>`<option value="S:${s.id}">${esc(s.name)}（${s.totalLessons}节/¥${s.listPrice}）</option>`).join("")}</optgroup>
+          <optgroup label="组合套餐">${DB.combos.map(c=>`<option value="C:${c.id}">${esc(c.name)}（¥${c.price}）</option>`).join("")}</optgroup></select></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>实收金额(元) <span class="req">*</span></label><input id="ch_amount" type="number" min="0" step="0.01" placeholder="如 2000" oninput="chargePreview()"></div>
+        <div class="frow"><label>支付方式</label><select id="ch_method">
+          <option>微信</option><option>支付宝</option><option>现金</option><option>转账</option><option>刷卡</option></select></div>
+        <div class="frow"><label>收费日期</label><input id="ch_date" type="date" value="${todayStr()}"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>销售</label><input id="ch_sales" placeholder="如：王老师（选填）"></div>
+        <div class="frow"><label>校区</label><input id="ch_campus" placeholder="如：阳光校区（选填）"></div>
+        <div class="frow"><label>平台订单号</label><input id="ch_order" placeholder="如：T20260101001（选填）"></div>
+      </div>
+      <div class="frow"><label>备注</label><input id="ch_note" placeholder="如：开营礼包/优惠"></div>
+      <div class="note green" id="ch_preview">选择学员与产品后，此处自动显示课消拆分明细。</div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn" onclick="doCharge()">确认收费 ✓</button></div>`);
+}
+function chargePreview(){
+  const sel=$("ch_product").value; const amt=yuan2fen($("ch_amount").value);
+  const el=$("ch_preview");
+  if(!sel||!amt){ el.innerHTML='选择学员与产品后，此处自动显示课消拆分明细。'; return; }
+  const [t,pid]=sel.split(":");
+  if(t==="S"){
+    const s=DB.singles.find(x=>x.id===pid);
+    if(amt>0){ const unit=amt/s.totalLessons;
+      el.innerHTML=`<b>${esc(s.name)}</b>：${s.totalLessons} 课时，实收 ¥${fmtFen(amt)}，课消单价 <b>¥${unit.toFixed(2)}/节</b> → 每上1节自动消课 ¥${unit.toFixed(2)}`; }
+  }else{
+    const c=DB.combos.find(x=>x.id===pid);
+    if(amt>0){
+      const items=comboItemsSplit(c, amt);
+      el.innerHTML=items.map(i=>`<div>🎯 <b>${esc(i.unitName)}</b>：${i.lessons} 课时 · 拆分 ¥${fmtFen(i.amount)} · 单价 <b>¥${(i.amount/i.lessons/100).toFixed(2)}/节</b></div>`).join("");
+      const check=sum(items.map(i=>i.amount))===amt;
+      el.innerHTML+=(check?`<div style="margin-top:6px">✓ 拆分合计=实收 ¥${fmtFen(amt)}，可精确课消</div>`:`<div style="color:var(--red)">⚠ 拆分合计与实收不一致</div>`);
+    }
+  }
+}
+function doCharge(){
+  const sid=$("ch_student").value, sel=$("ch_product").value, amt=yuan2fen($("ch_amount").value);
+  if(!sid) return toast("请选择学员","err");
+  if(!sel) return toast("请选择产品","err");
+  if(!(amt>0)) return toast("请填写实收金额","err");
+  const [t,pid]=sel.split(":");
+  const res=addPayment({studentId:sid,type:t==="S"?"single":"combo",productId:pid,amountFen:amt,
+    method:$("ch_method").value,date:$("ch_date").value||todayStr(),note:$("ch_note").value.trim(),
+    orderNo:$("ch_order").value.trim(),sales:$("ch_sales").value.trim(),campus:$("ch_campus").value.trim()});
+  if(res.err) return toast(res.err,"err");
+  maskClose(); pageFinance(); toast("收费成功，课时与拆分金额已入账 ✓","ok");
+}
+function openRefundFor(sid){
+  TMP.refundSid=sid;
+  const st=DB.students.find(x=>x.id===sid);
+  const units=accountsOfStudent(sid).filter(a=>a.acc.remainingLessons>0);
+  const campusDefault=st?(st.campus||""):"";
+  const lastPay=DB.payments.filter(p=>p.studentId===sid).slice(-1)[0];
+  const salesDefault=lastPay?(lastPay.sales||""):"";
+  openModal(`
+    <div class="mhd"><h3>退费录入 · ${esc(st?st.name:"")}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2">
+        <div class="frow"><label>学员 <span class="req">*</span></label>
+          <input value="${esc(st?st.name:"")}" readonly style="background:#f2f4f7;font-weight:700">
+          <div style="font-size:11px;color:var(--ink2)">${esc(st?((st.memberNo?"用户编号 "+st.memberNo+" · ":"")+st.phone):"")}</div></div>
+        <div class="frow"><label>退费产品 <span class="req">*</span></label>
+          <select id="rf_unit" onchange="refundPreview()">
+            ${units.map(u=>`<option value="${u.key}">${esc(u.info.name)}（剩${u.acc.remainingLessons}节 / ¥${fmtFen(u.acc.remainingAmount)}）</option>`).join("")||"<option value=''>无剩余课时</option>"}
+          </select></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>应退金额(元)</label><input id="rf_amount" type="number" min="0" step="0.01" readonly style="background:#f2f4f7;font-weight:700" value="0"></div>
+        <div class="frow"><label>退款方式</label><select id="rf_method">
+          <option>微信</option><option>支付宝</option><option>现金</option><option>转账</option><option>刷卡</option></select></div>
+        <div class="frow"><label>退费日期</label><input id="rf_date" type="date" value="${todayStr()}"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>销售</label><input id="rf_sales" value="${esc(salesDefault)}" placeholder="如：王老师（选填）"></div>
+        <div class="frow"><label>校区</label><input id="rf_campus" value="${esc(campusDefault)}" placeholder="如：阳光校区（选填）"></div>
+        <div class="frow"><label>平台订单号</label><input id="rf_order" placeholder="如：R20260101001（选填）"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>手续费(元)</label><input id="rf_fee" type="number" min="0" step="0.01" value="0" oninput="refundPreview()"></div>
+        <div class="frow"><label>其他扣减(元)</label><input id="rf_other" type="number" min="0" step="0.01" value="0" placeholder="赠品/教材等" oninput="refundPreview()"></div>
+        <div class="frow"><label>退费原因</label><input id="rf_reason" placeholder="如：转学/课程调整"></div>
+      </div>
+      <div class="frow"><label>备注</label><input id="rf_note" placeholder="选填"></div>
+      <div class="note" id="rf_preview">应退金额 = 剩余金额 − 手续费 − 其他扣减，此处自动计算。</div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn red" onclick="doRefund('${sid}')">提交退费申请</button></div>`);
+  refundPreview();
+}
+function refundPreview(){
+  const unit=$("rf_unit").value, fee=yuan2fen($("rf_fee").value), other=yuan2fen($("rf_other").value);
+  const el=$("rf_preview"), amtEl=$("rf_amount");
+  if(!unit){ if(el) el.innerHTML="该学员暂无剩余课时"; if(amtEl) amtEl.value="0"; return; }
+  const sid=TMP.refundSid;
+  const acc=computeAccount(sid, unit);
+  const refund=Math.max(0,acc.remainingAmount-fee-other);
+  if(amtEl) amtEl.value=(refund/100).toFixed(2);
+  el.innerHTML=`剩余课时 <b>${acc.remainingLessons}</b> 节 · 剩余金额 <b>¥${fmtFen(acc.remainingAmount)}</b><br>
+    − 手续费 ¥${fmtFen(fee)} ${other?"− 其他扣减 ¥"+fmtFen(other):""}<br>
+    应退金额 = <b style="color:var(--red);font-size:16px">¥${fmtFen(refund)}</b><br>
+    <span style="font-size:11.5px">审核通过后：剩余课时与金额将<b>自动归零回滚</b>，并生成红字流水。</span>`;
+}
+function doRefund(sid){
+  const unit=$("rf_unit").value;
+  if(!unit) return toast("该学员暂无剩余课时可退","err");
+  const res=addRefund({studentId:sid,unitKey:unit,feeFen:yuan2fen($("rf_fee").value),otherFen:yuan2fen($("rf_other").value),
+    reason:$("rf_reason").value.trim(),note:$("rf_note").value.trim(),
+    method:$("rf_method").value,date:$("rf_date").value||todayStr(),
+    sales:$("rf_sales").value.trim(),orderNo:$("rf_order").value.trim(),campus:$("rf_campus").value.trim()});
+  if(res.err) return toast(res.err,"err");
+  maskClose(); pageFinance(); toast("退费申请已提交，待审核 ✓","ok");
+}
+/* 单笔退费：按用户编号锁定学员 */
+function openRefundSearch(){
+  openModal(`
+    <div class="mhd"><h3>单笔退费 · 按用户编号锁定学员</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="note">输入<b>用户编号</b>精确锁定学员（也支持手机号 / 学员姓名查询）。</div>
+      <div style="display:flex;gap:10px">
+        <input id="rf_q" style="flex:1" placeholder="用户编号，如 STU-0001" onkeydown="if(event.key==='Enter')lockStudentForRefund()">
+        <button class="btn" onclick="lockStudentForRefund()">🔒 锁定学员</button>
+      </div>
+      <div id="rf_lock_result"></div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">关闭</button></div>`);
+  const q=$("rf_q"); if(q) q.focus();
+}
+function lockStudentForRefund(){
+  const q=$("rf_q").value.trim(), el=$("rf_lock_result");
+  if(!q) return toast("请输入用户编号/手机号/姓名","err");
+  let st=DB.students.find(s=>s.memberNo===q);
+  if(!st) st=DB.students.find(s=>s.phone===q);
+  if(!st){
+    const hits=DB.students.filter(s=>s.name===q);
+    if(hits.length===1) st=hits[0];
+    else if(hits.length>1){ el.innerHTML=`<div class="note" style="color:var(--red)">姓名「${esc(q)}」存在 ${hits.length} 位学员，请改用用户编号锁定。</div>`; return; }
+  }
+  if(!st){ el.innerHTML=`<div class="note" style="color:var(--red)">未找到学员，请核对用户编号（学员档案中可设置）。</div>`; return; }
+  const units=accountsOfStudent(st.id).filter(a=>a.acc.remainingLessons>0);
+  el.innerHTML=`<div class="note green">🔒 已锁定：<b>${esc(st.name)}</b>（${esc(st.memberNo||"未设用户编号")} · ${esc(st.phone)}）· 可退单元 ${units.length} 个<br>
+    <button class="btn" style="margin-top:8px" onclick="maskClose();openRefundFor('${st.id}')">继续填写退费 →</button></div>`;
+}
+
+/* ---------------- 排课与考勤 ---------------- */
+function pageClasses(){
+  FILTER.dateRange=FILTER.dateRange||"week";
+  const range=FILTER.dateRange;
+  let list=DB.classes.slice().sort((a,b)=>a.date<b.date?-1:1);
+  const t=todayStr();
+  if(range==="today") list=list.filter(c=>c.date===t);
+  if(range==="tomorrow") list=list.filter(c=>c.date===addDays(t,1));
+  if(range==="week") list=list.filter(c=>c.date>=addDays(t,-7)&&c.date<=addDays(t,7));
+  topbar("排课与考勤","班次 · 考勤点名自动消课 · 手动补录",`
+    <select style="width:140px" onchange="FILTER.dateRange=this.value;renderPage()">
+      <option value="week" ${range==="week"?"selected":""}>近 7 天班次</option>
+      <option value="today" ${range==="today"?"selected":""}>仅今日</option>
+      <option value="tomorrow" ${range==="tomorrow"?"selected":""}>仅明日</option>
+      <option value="all" ${range==="all"?"selected":""}>全部班次</option>
+    </select>
+    ${can("class_edit")?`<button class="btn" onclick="openClassModal()">＋ 新建班次</button>
+    <button class="btn ghost" onclick="openBatchSchedule()">⚡ 批量排课（周期）</button>`:""}
+    ${can("consume")?`<button class="btn ghost" onclick="openManualConsume()">✍ 手动消课</button>`:""}
+    ${can("import_consume")?`<button class="btn ghost" onclick="openImport('consumptions')">⬆ 批量补录消课</button>`:""}`);
+  $("view").innerHTML=`
+  <div class="note blue" style="margin-bottom:16px">🗓️ 新建班次时需关联<b>课消单元</b>（单品 或 套餐子产品）。考勤点名后，到课学员<b>自动扣减1次课时并按课消单价记录金额</b>，同步更新邀约状态为「已到课」。</div>
+  <div style="display:grid;gap:12px">
+    ${list.length?list.map(c=>lessonCardHTML(c)).join(""):`<div class="card"><div class="blank"><div class="big">🗓️</div>该时间范围内暂无班次，点右上角「新建班次」</div></div>`}
+  </div>`;
+}
+function openClassModal(){
+  openModal(`
+    <div class="mhd"><h3>新建班次（排课）</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="frow"><label>课消单元 <span class="req">*</span></label>
+        <select id="cl_unit"><option value="">— 选择单品或套餐子产品 —</option>
+        <optgroup label="单品">${DB.singles.map(s=>`<option value="S:${s.id}">${esc(s.name)}</option>`).join("")}</optgroup>
+        ${DB.combos.map(c=>`<optgroup label="${esc(c.name)}（套餐）">
+          ${c.items.map(it=>{const s=DB.singles.find(x=>x.id===it.singleId);return `<option value="C:${c.id}:${it.singleId}">${esc(c.name)}·${esc(s?s.name:"")}</option>`;}).join("")}
+        </optgroup>`).join("")}
+        </select></div>
+      <div class="f3">
+        <div class="frow"><label>日期 <span class="req">*</span></label><input id="cl_date" type="date" value="${todayStr()}"></div>
+        <div class="frow"><label>开始时间</label><input id="cl_start" type="time" value="10:00"></div>
+        <div class="frow"><label>结束时间</label><input id="cl_end" type="time" value="12:00"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>授课教师</label><input id="cl_teacher" placeholder="如：桃子老师"></div>
+        <div class="frow"><label>上课地点</label><input id="cl_loc" placeholder="如：营地岩壁区"></div>
+        <div class="frow"><label>班次名称</label><input id="cl_name" placeholder="默认：产品名+A班"></div>
+      </div>
+      <div class="frow"><label>备注</label><input id="cl_note"></div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn" onclick="doCreateClass()">创建并生成邀约名单</button></div>`);
+}
+function doCreateClass(){
+  const unit=$("cl_unit").value;
+  const date=$("cl_date").value||todayStr();
+  if(!unit) return toast("请选择课消单元","err");
+  const info=unitInfo(unit);
+  const name=$("cl_name").value.trim()||(info.name+"·A班");
+  const cls={id:uid(),name,unitKey:unit,unitName:info.name,date,start:$("cl_start").value,end:$("cl_end").value,
+    teacher:$("cl_teacher").value.trim(),location:$("cl_loc").value.trim(),note:$("cl_note").value.trim(),createdAt:nowTxt()};
+  DB.classes.push(cls);
+  ensureInvites(cls.id);
+  log("新建班次", name+"（"+date+" "+cls.start+"-"+cls.end+"）");
+  saveDB(); maskClose(); renderPage();
+  toast("班次已创建，已自动生成邀约名单 ✓","ok");
+}
+function openAttendance(classId){
+  const cls=DB.classes.find(c=>c.id===classId); if(!cls) return;
+  ensureInvites(classId);
+  const invs=classInvites(classId);
+  const done=DB.consumptions.some(c=>c.classId===classId);
+  if(done){ toast("本班次已核销，不可重复考勤","err"); return; }
+  openModal(`
+    <div class="mhd"><h3>考勤点名 · ${esc(cls.name)}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd">
+      <div class="note" style="margin-bottom:14px">📅 ${cls.date}（${weekCN(cls.date)}）${cls.start}-${cls.end} · ${esc(cls.teacher||"—")} · ${esc(cls.location||"—")}<br>
+      🎯 课消单元：${esc(cls.unitName)}　到课学员将自动消课 <b>1节</b>，金额=课消单价。</div>
+      <div id="attList">
+      ${invs.length?invs.map(i=>{
+        const st=DB.students.find(x=>x.id===i.studentId);
+        if(!st) return "";
+        const acc=computeAccount(st.id, cls.unitKey);
+        return `<div class="li-item" data-id="${i.studentId}">
+          <input type="checkbox" class="att-chk" checked style="width:18px;height:18px;accent-color:var(--pine)">
+          ${av(st.name)}<div class="main"><div style="font-weight:700">${esc(st.name)}</div>
+          <div class="sub">${esc(st.phone)} · 该单元剩余 <b class="mono">${acc.remainingLessons}</b> 节 · 邀约状态：${esc(i.status)}</div></div>
+          <span style="font-size:12px;color:var(--ink2)">到课</span></div>`;
+      }).join(""):`<div class="blank"><div class="big">🈳</div>暂无该单元在读学员，可先去「收费」再回来点名</div>`}
+      </div>
+      <div style="margin-top:8px"><button class="btn sm ghost" onclick="toggleAllAtt(true)">全选</button>
+        <button class="btn sm ghost" onclick="toggleAllAtt(false)">全不选</button>
+        <span id="attCnt" style="margin-left:10px;font-size:12.5px;color:var(--ink2)"></span></div>
+    </div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn ember" onclick="submitAttendance('${classId}')">✓ 确认考勤并自动消课</button></div>`);
+  updAttCnt();
+}
+function toggleAllAtt(v){ document.querySelectorAll(".att-chk").forEach(c=>c.checked=v); updAttCnt(); }
+function updAttCnt(){
+  const el=document.getElementById("attCnt");
+  if(el){ const n=document.querySelectorAll(".att-chk").length, c=document.querySelectorAll(".att-chk:checked").length; el.textContent="共 "+n+" 人，到课 "+c+" 人（每人消课1节）"; }
+}
+function submitAttendance(classId){
+  const chks=[...document.querySelectorAll(".att-chk")];
+  const presents=chks.filter(c=>c.checked).map(c=>c.closest(".li-item").dataset.id);
+  saveAttendance(classId, presents);
+  maskClose(); renderPage();
+}
+function openBatchSchedule(){
+  const weekdayOpts=[1,2,3,4,5,6,0].map(w=>`<label style="cursor:pointer;user-select:none"><input type="checkbox" class="bs_wd" value="${w}" ${w===6?"checked":""}> ${w===0?"周日":"周"+["一","二","三","四","五","六"][w-1]}</label>`).join("");
+  openModal(`
+    <div class="mhd"><h3>⚡ 批量排课（周期规则）</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="frow"><label>课消单元 <span class="req">*</span></label>
+        <select id="bs_unit"><option value="">— 选择单品或套餐子产品 —</option>
+        <optgroup label="单品">${DB.singles.map(s=>`<option value="S:${s.id}">${esc(s.name)}</option>`).join("")}</optgroup>
+        ${DB.combos.map(c=>`<optgroup label="${esc(c.name)}（套餐）">
+          ${c.items.map(it=>{const s=DB.singles.find(x=>x.id===it.singleId);return `<option value="C:${c.id}:${it.singleId}">${esc(c.name)}·${esc(s?s.name:"")}</option>`;}).join("")}
+        </optgroup>`).join("")}
+        </select></div>
+      <div class="f2">
+        <div class="frow"><label>重复星期 <span class="req">*</span></label><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-top:6px">${weekdayOpts}</div></div>
+        <div class="frow"><label>班次前缀</label><input id="bs_prefix" placeholder="如：周末营·创意美术（默认=产品名）"></div>
+      </div>
+      <div class="f2">
+        <div class="frow"><label>开始日期 <span class="req">*</span></label><input id="bs_start" type="date" value="${todayStr()}"></div>
+        <div class="frow"><label>结束日期 <span class="req">*</span></label><input id="bs_end" type="date" value="${addDays(todayStr(),30)}"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>开始时间</label><input id="bs_start_t" type="time" value="10:00"></div>
+        <div class="frow"><label>结束时间</label><input id="bs_end_t" type="time" value="12:00"></div>
+        <div class="frow"><label>授课教师</label><input id="bs_teacher" placeholder="如：桃子老师"></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>上课地点</label><input id="bs_loc" placeholder="如：营地岩壁区"></div>
+        <div class="frow"><label>备注</label><input id="bs_note" placeholder="选填"></div>
+        <div class="frow" style="align-self:end"><button class="btn sun" style="width:100%" onclick="doBatchSchedule()">批量生成班次</button></div>
+      </div>
+      <div class="note green">📅 将按所选星期自动生成起止日期内的全部课次，每个班次自动同步生成邀约名单。</div>
+    </div></div>`);
+}
+function doBatchSchedule(){
+  const unit=$("bs_unit").value;
+  if(!unit) return toast("请选择课消单元","err");
+  const wds=[...document.querySelectorAll(".bs_wd:checked")].map(x=>parseInt(x.value));
+  if(!wds.length) return toast("请至少选择一个重复星期","err");
+  const start=$("bs_start").value, end=$("bs_end").value;
+  if(!start||!end||end<start) return toast("请填写正确的起止日期","err");
+  const info=unitInfo(unit);
+  const prefix=$("bs_prefix").value.trim()||info.name;
+  let n=0;
+  for(let d=start; d<=end; d=addDays(d,1)){
+    const w=new Date(d+"T00:00:00").getDay();
+    if(!wds.includes(w)) continue;
+    const cls={id:uid(),name:prefix+"·"+d.slice(5).replace("-","/"),unitKey:unit,unitName:info.name,date:d,
+      start:$("bs_start_t").value,end:$("bs_end_t").value,teacher:$("bs_teacher").value.trim(),
+      location:$("bs_loc").value.trim(),note:$("bs_note").value.trim(),createdAt:nowTxt()};
+    DB.classes.push(cls);
+    ensureInvites(cls.id);
+    n++;
+  }
+  if(!n) return toast("起止日期内没有所选星期的日期，请调整","err");
+  saveDB();
+  log("批量排课", `${info.name}：${start}~${end} 生成 ${n} 个班次`);
+  maskClose(); pageClasses(); toast(`已生成 ${n} 个班次，邀约名单已同步 ✓`,"ok");
+}
+function openManualConsume(){
+  const unitOpts=allUnitKeys().map(k=>{const i=unitInfo(k);return `<option value="${k}">${esc(i.name)}</option>`;}).join("");
+  openModal(`
+    <div class="mhd"><h3>手动消课（补录 / 异常处理）</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2">
+        <div class="frow"><label>学员 <span class="req">*</span></label>
+          <select id="mc_student">${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)}（${esc(s.phone)}）</option>`).join("")}</select></div>
+        <div class="frow"><label>产品单元 <span class="req">*</span></label><select id="mc_unit">${unitOpts}</select></div>
+      </div>
+      <div class="f3">
+        <div class="frow"><label>消课日期</label><input id="mc_date" type="date" value="${todayStr()}"></div>
+        <div class="frow"><label>消课数量 <span class="req">*</span></label><input id="mc_count" type="number" min="1" value="1"></div>
+        <div class="frow"><label>备注</label><input id="mc_note" placeholder="如：补录上周"></div>
+      </div>
+      <div class="note" id="mc_preview">选择后自动显示该单元剩余课时与课消金额。</div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn" onclick="doManualConsume()">确认消课</button></div>`);
+  ["mc_student","mc_unit","mc_count"].forEach(id=>$(id).addEventListener("change",mcPreview));
+  mcPreview();
+}
+function mcPreview(){
+  const sid=$("mc_student").value, unit=$("mc_unit").value, n=parseInt($("mc_count").value)||1;
+  const el=$("mc_preview"); if(!el) return;
+  if(!sid||!unit){ el.innerHTML="选择后自动显示该单元剩余课时与课消金额。"; return; }
+  const acc=computeAccount(sid,unit);
+  el.innerHTML=`当前剩余 <b>${acc.remainingLessons}</b> 节 / ¥${fmtFen(acc.remainingAmount)}，课消单价 <b>¥${fmtFen(acc.unitPrice)}/节</b> → 本次消 ${n} 节，将扣 <b style="color:var(--red)">¥${fmtFen(Math.round(acc.unitPrice*n))}</b>`;
+  if(acc.remainingLessons<n) el.innerHTML=`<span style="color:var(--red)">⚠ 剩余课时不足（剩 ${acc.remainingLessons} 节）</span>`;
+}
+function doManualConsume(){
+  const sid=$("mc_student").value, unit=$("mc_unit").value, n=parseInt($("mc_count").value)||1;
+  const res=consume(sid,unit,n,$("mc_date").value||todayStr(),"manual","",DB.org.operator,$("mc_note").value.trim());
+  if(res.err) return toast(res.err,"err");
+  maskClose(); renderPage(); toast("已手动消课 "+n+" 节 ✓","ok");
+}
+
+/* ---------------- 邀约中心 ---------------- */
+function openClassInvite(id){
+  const c=DB.classes.find(x=>x.id===id);
+  if(c){ FILTER.invDate=c.date; go('invites'); }
+}
+function pageInvites(){
+  FILTER.invDate=FILTER.invDate||todayStr();
+  const date=FILTER.invDate;
+  const classes=DB.classes.filter(c=>c.date>=date&&c.date<=addDays(date,6)).sort((a,b)=>a.date<b.date?-1:1);
+  topbar("邀约中心","按班次邀约 · 一键复制话术 · 状态跟进",`
+    <input type="date" value="${date}" style="width:150px" onchange="FILTER.invDate=this.value;renderPage()">
+    <button class="btn ghost" onclick="FILTER.invDate=todayStr();renderPage()">回到今天</button>`);
+  $("view").innerHTML=`
+  <div class="note" style="margin-bottom:16px">📣 新建班次时会自动生成邀约名单（该单元剩余课时&gt;0 的学员）。点「复制话术」即可粘贴到微信/短信发给家长；学员确认后点「已确认」，考勤点名后自动变为「已到课/未到」。</div>
+  ${classes.length?classes.map(cls=>{
+    const invs=classInvites(cls.id);
+    if(!invs.length) return "";
+    const st=(s)=>s==="已到课"?"green":(s==="未到"?"ember":"");
+    const cnt={};
+    invs.forEach(i=>cnt[i.status]=(cnt[i.status]||0)+1);
+    return `<div class="card" style="margin-bottom:14px">
+      <div class="hd"><h3>${esc(cls.name)} <span style="font-size:12px;color:var(--ink2);font-weight:400">${cls.date}（${weekCN(cls.date)}）${cls.start}-${cls.end} · ${esc(cls.teacher||"—")}</span></h3>
+        <div style="display:flex;gap:8px;font-size:12px;color:var(--ink2)">
+          <span>总${invs.length}人</span><span class="tag gray">未邀约 ${cnt["未邀约"]||0}</span>
+          <span class="tag sky">已邀约 ${cnt["已邀约"]||0}</span>
+          <span class="tag pine">已确认 ${cnt["已确认"]||0}</span>
+          <span class="tag ember">已到课 ${cnt["已到课"]||0}</span></div></div>
+      <div class="bd" style="padding:8px 18px 14px">
+        ${invs.map(i=>{
+          const st2=DB.students.find(x=>x.id===i.studentId); if(!st2) return "";
+          const acc=computeAccount(st2.id, cls.unitKey);
+          return `<div class="li-item">
+            ${av(st2.name)}
+            <div class="main"><div style="font-weight:700">${esc(st2.name)} <span style="font-weight:400;color:var(--ink2);font-size:12px">${esc(st2.phone)}</span>
+              <span style="font-size:11.5px;color:var(--ink2)">· 该单元剩 ${acc.remainingLessons} 节</span></div>
+              <div class="sub">${esc(cls.unitName)}</div></div>
+            ${i.status!=="未到"&&i.status!=="已到课"?`<button class="btn sm sun" onclick="copyInvite('${i.id}')">📋 复制话术</button>`:""}
+            ${i.status==="未邀约"?`<button class="btn sm" onclick="copyInvite('${i.id}',true)">复制并标记已邀约</button>`:""}
+            ${(i.status==="已邀约"||i.status==="已确认")?`<button class="btn sm ghost" onclick="setInviteStatus('${i.id}','已确认');renderPage()">✓ 已确认</button>`:""}
+            <span class="tag ${st(i.status)}" style="min-width:58px;text-align:center">${esc(i.status)}</span>
+          </div>`;
+        }).join("")}
+      </div></div>`;
+  }).join(""):`<div class="card"><div class="blank"><div class="big">📣</div>所选周内暂无班次，去「排课与考勤」新建班次后自动生成邀约名单</div></div>`}`;
+}
+function copyInvite(inviteId, markInvited){
+  const i=DB.invites.find(x=>x.id===inviteId); if(!i) return;
+  const cls=DB.classes.find(c=>c.id===i.classId);
+  const st=DB.students.find(x=>x.id===i.studentId);
+  copyText(inviteMsg(st, cls)).then(()=>{
+    if(markInvited){ i.status="已邀约"; i.time=nowTxt(); saveDB(); renderPage(); }
+  });
+}
+
+/* ---------------- 报表 ---------------- */
+function pageReports(){
+  FILTER.rTab=FILTER.rTab||"consumed";
+  FILTER.rStart=FILTER.rStart||addDays(todayStr(),-30);
+  FILTER.rEnd=FILTER.rEnd||todayStr();
+  const tab=FILTER.rTab;
+  topbar("报表导出","已课消 · 待课消（预收） · 资金流水",`
+    <button class="btn ${tab==="consumed"?"ember":"ghost"}" onclick="FILTER.rTab='consumed';renderPage()">已课消报表</button>
+    <button class="btn ${tab==="pending"?"ember":"ghost"}" onclick="FILTER.rTab='pending';renderPage()">待课消报表（预收）</button>
+    <button class="btn ${tab==="money"?"ember":"ghost"}" onclick="FILTER.rTab='money';renderPage()">资金流水</button>`);
+  const unitOpts=allUnitKeys().map(k=>{const i=unitInfo(k);return `<option value="${k}">${esc(i.name)}</option>`;}).join("");
+  const studentOpts=DB.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  const teacherOpts=[...new Set(DB.classes.map(c=>c.teacher).filter(Boolean))].map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  const campusOpts=[...new Set(DB.students.map(s=>s.campus).filter(Boolean))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  const salesOpts=[...new Set(DB.payments.map(p=>p.sales).filter(Boolean))].map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  const uf=FILTER.rUnit||"", sf=FILTER.rStudent||"", tf=FILTER.rTeacher||"";
+  $("view").innerHTML=`
+  <div class="card" style="margin-bottom:16px">
+    <div class="filterbar">
+      ${tab!=="pending"?`<input type="date" value="${FILTER.rStart}" onchange="FILTER.rStart=this.value;renderPage()">
+      <span style="color:var(--ink2)">至</span>
+      <input type="date" value="${FILTER.rEnd}" onchange="FILTER.rEnd=this.value;renderPage()">`:"<span style='font-size:13px;color:var(--ink2)'>预收快照：<b>当前实时剩余</b>（点击导出生成报表文件）</span>"}
+      <select style="width:auto;min-width:170px" onchange="FILTER.rUnit=this.value;renderPage()"><option value="">全部产品</option>${unitOpts}</select>
+      <select style="width:auto;min-width:120px" onchange="FILTER.rStudent=this.value;renderPage()"><option value="">全部学员</option>${studentOpts}</select>
+      ${tab!=="money"?`<select style="width:auto;min-width:110px" onchange="FILTER.rCampus=this.value;renderPage()"><option value="">全部校区</option>${campusOpts}</select>`:""}
+      ${tab!=="money"?`<select style="width:auto;min-width:110px" onchange="FILTER.rSales=this.value;renderPage()"><option value="">全部销售</option>${salesOpts}</select>`:""}
+      ${tab==="consumed"?`<select style="width:auto;min-width:120px" onchange="FILTER.rTeacher=this.value;renderPage()"><option value="">全部教师</option>${teacherOpts}</select>`:""}
+      <span style="flex:1"></span>
+      ${can("report_export")?`<button class="btn ember" onclick="doExportReport()">⬇ 导出 Excel / CSV</button>`:""}
+    </div>
+  </div>
+  <div class="card">${tab==="consumed"?renderConsumedTable():tab==="pending"?renderPendingTable():renderMoneyTable()}</div>`;
+}
+function renderConsumedTable(){
+  const rows=reportConsumedRows(FILTER.rStart,FILTER.rEnd,FILTER.rUnit,FILTER.rStudent,FILTER.rTeacher,FILTER.rCampus,FILTER.rSales);
+  const sumL=sum(rows.map(r=>r.lessons)), sumA=sum(rows.map(r=>r.amount));
+  return `<div class="hd"><h3>✅ 已课消报表 <span style="font-size:12px;color:var(--ink2);font-weight:400">${FILTER.rStart||"—"} ~ ${FILTER.rEnd||"—"} · ${rows.length} 条课消记录</span></h3></div>
+  <div class="tablewrap"><table class="tbl">
+    <thead><tr><th>日期</th><th>学员姓名</th><th>产品名称</th><th>校区</th><th>销售</th><th>授课教师</th><th>课消人次（课时）</th><th>课消金额（实收分摊）</th><th>来源</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td class="mono">${r.date}</td><td><b>${esc(studentName(r.studentId))}</b></td>
+      <td>${esc(r.unitName)}</td><td>${esc(r.campus||"—")}</td><td>${esc(r.sales||"—")}</td>
+      <td>${esc(r.teacher)}</td>
+      <td class="mono">${r.lessons}</td><td class="mono">¥${fmtFen(r.amount)}</td>
+      <td>${r.source==="考勤消课"?'<span class="tag pine">考勤</span>':'<span class="tag sky">手动</span>'}</td></tr>`).join("")||`<tr><td colspan="9"><div class="blank"><div class="big">⛏️</div>筛选条件下暂无课消记录</div></td></tr>`}
+    </tbody>
+    <tfoot><tr class="sum"><td colspan="6">合计（筛选条件下）</td><td class="mono">${sumL} 课时</td><td class="mono">¥${fmtFen(sumA)}</td><td></td></tr></tfoot>
+  </table></div>`;
+}
+function renderPendingTable(){
+  const rows=reportPendingRows(FILTER.rUnit,FILTER.rStudent,FILTER.rCampus,FILTER.rSales);
+  const sumL=sum(rows.map(r=>r.remainingLessons)), sumA=sum(rows.map(r=>r.remainingAmount));
+  return `<div class="hd"><h3>🏔️ 待课消报表（预收账款） <span style="font-size:12px;color:var(--ink2);font-weight:400">剩余课时 × 课消单价 · 共 ${rows.length} 条</span></h3></div>
+  <div class="tablewrap"><table class="tbl">
+    <thead><tr><th>学员姓名</th><th>联系电话</th><th>产品名称</th><th>校区</th><th>销售</th><th>剩余待消人次（课时）</th><th>课消单价</th><th>待消金额（预收）</th><th>预警</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td><b>${esc(r.studentName)}</b></td><td class="mono">${esc(r.phone)}</td>
+      <td>${esc(r.unitName)}</td><td>${esc(r.campus||"—")}</td><td>${esc(r.sales||"—")}</td>
+      <td class="mono">${r.remainingLessons}</td>
+      <td class="mono">¥${fmtFen(r.unitPrice)}/节</td>
+      <td class="mono" style="font-weight:700">¥${fmtFen(r.remainingAmount)}</td>
+      <td>${r.remainingAmount>0&&r.remainingAmount<=yuan2fen(DB.org.amountThreshold)?'<span class="badge-warn">需续费</span>':""}</td></tr>`).join("")||`<tr><td colspan="9"><div class="blank"><div class="big">🏔️</div>当前无待消课时（所有课时已消或已退费）</div></td></tr>`}
+    </tbody>
+    <tfoot><tr class="sum"><td colspan="5">合计</td><td class="mono">${sumL} 课时</td><td></td><td class="mono">¥${fmtFen(sumA)}</td><td></td></tr></tfoot>
+  </table></div>`;
+}
+function renderMoneyTable(){
+  const rows=reportMoneyRows();
+  const totalIn=sum(rows.filter(r=>r.type==="收费").map(r=>r.amount));
+  const totalOut=sum(rows.filter(r=>r.type==="退费").map(r=>r.amount));
+  return `<div class="hd"><h3>🧾 资金流水报表 <span style="font-size:12px;color:var(--ink2);font-weight:400">收费 ${DB.payments.length} 笔 · 已通过退费 ${DB.refunds.filter(r=>r.status==="approved").length} 笔</span></h3></div>
+  <div class="tablewrap"><table class="tbl">
+    <thead><tr><th>日期</th><th>类型</th><th>学员</th><th>产品</th><th>金额</th><th>方式</th><th>校区</th><th>销售</th><th>操作人</th></tr></thead>
+    <tbody>${rows.slice().reverse().map(r=>`<tr class="${r.type==="退费"?"red":""}">
+      <td class="mono">${r.date}</td><td>${r.type==="收费"?'<span class="tag pine">收费</span>':'<span class="tag ember">退费</span>'}</td>
+      <td><b>${esc(studentName(r.studentId))}</b></td><td>${esc(r.name)}</td>
+      <td class="mono">${r.amount>=0?"+":"-"}¥${fmtFen(Math.abs(r.amount))}</td><td>${esc(r.method)||"—"}</td>
+      <td>${esc(r.campus)||"—"}</td><td>${esc(r.sales)||"—"}</td><td>${esc(r.operator)||"—"}</td></tr>`).join("")||`<tr><td colspan="9"><div class="blank">暂无流水</div></td></tr>`}
+    </tbody>
+    <tfoot><tr class="sum"><td colspan="6">合计：实收 ¥${fmtFen(totalIn)} / 退费 -¥${fmtFen(-totalOut)} / 净额 ¥${fmtFen(totalIn+totalOut)}</td><td></td><td></td><td></td></tr></tfoot>
+  </table></div>`;
+}
+function doExportReport(){
+  const tab=FILTER.rTab;
+  if(tab==="consumed"){
+    const rows=reportConsumedRows(FILTER.rStart,FILTER.rEnd,FILTER.rUnit,FILTER.rStudent,FILTER.rTeacher,FILTER.rCampus,FILTER.rSales);
+    const data=[["日期","学员姓名","联系电话","产品名称","校区","销售","授课教师","课消人次(课时)","课消金额(元)","来源"]];
+    rows.forEach(r=>data.push([r.date,studentName(r.studentId),studentPhone(r.studentId),r.unitName,r.campus||"",r.sales||"",r.teacher,r.lessons,fen2yuan(r.amount).toFixed(2),r.source]));
+    data.push(["","","","","","","合计",sum(rows.map(x=>x.lessons)),fen2yuan(sum(rows.map(x=>x.amount))).toFixed(2),""]);
+    exportXLS(data, reportFileName("课消报表",FILTER.rStart,FILTER.rEnd),"已课消报表");
+  }else if(tab==="pending"){
+    const rows=reportPendingRows(FILTER.rUnit,FILTER.rStudent,FILTER.rCampus,FILTER.rSales);
+    const data=[["学员姓名","联系电话","产品名称","校区","销售","剩余待消人次(课时)","课消单价(元)","待消金额(元)"]];
+    rows.forEach(r=>data.push([r.studentName,r.phone,r.unitName,r.campus||"",r.sales||"",r.remainingLessons,fen2yuan(r.unitPrice).toFixed(2),fen2yuan(r.remainingAmount).toFixed(2)]));
+    data.push(["","","","","合计",sum(rows.map(x=>x.remainingLessons)),"",fen2yuan(sum(rows.map(x=>x.remainingAmount))).toFixed(2)]);
+    exportXLS(data, reportFileName("待课消报表",todayStr(),todayStr()),"待课消报表");
+  }else{
+    const rows=reportMoneyRows();
+    const data=[["日期","类型","学员姓名","联系电话","产品","金额(元)","支付方式","校区","销售","操作人","备注"]];
+    rows.forEach(r=>data.push([r.date,r.type,studentName(r.studentId),studentPhone(r.studentId),r.name,fen2yuan(r.amount).toFixed(2),r.method,r.campus||"",r.sales||"",r.operator,r.note]));
+    exportXLS(data, reportFileName("资金流水报表",todayStr(),todayStr()),"资金流水");
+  }
+}
+const studentPhone=id=>{const s=DB.students.find(x=>x.id===id);return s?s.phone:"";};
+const studentCampus=id=>{const s=DB.students.find(x=>x.id===id);return s?s.campus||"":"";};
+const salesOfUnit=(studentId, unitKey)=>{
+  const p=DB.payments.find(x=>x.studentId===studentId && (x.items||[]).some(i=>i.unitKey===unitKey));
+  return p?p.sales||"":"";
+};
+
+/* ---------------- 批量导入 ---------------- */
+function openImport(kind){
+  const titles={students:"学员档案",payments:"收费记录",consumptions:"消课补录",refunds:"退费申请"};
+  openModal(`
+    <div class="mhd"><h3>批量导入 · ${titles[kind]||"数据"}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="note">1️⃣ 先下载模板填写 → 2️⃣ 选择文件导入 → 3️⃣ 失败数据生成「错误报告」下载修正。</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn sm ghost" onclick="downloadTemplate('${kind}')">⬇ 下载模板</button>
+        <label class="btn sun sm" style="cursor:pointer">📁 选择文件
+          <input type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleImport(this,'${kind}')"></label>
+      </div>
+      ${kind==="students"?`<div class="f2"><div class="frow"><label>手机号重复时</label>
+        <select id="imp_mode"><option value="skip">跳过（默认）</option><option value="update">更新已有档案</option></select></div></div>`:""}
+      <div class="hint">${kind==="students"?"必填：姓名、联系电话（5-20位，不强制手机号）；选填：用户编号、性别、出生日期、学校、年级、校区、来源渠道、备注、自定义字段。":kind==="payments"?"必填：购买产品名称、实收金额；学员匹配按「用户编号→联系电话→姓名」；选填：平台订单号、支付方式、购买日期、校区、售卖人。":kind==="refunds"?"字段与批量收费一致：学员姓名、联系电话、用户编号、产品名称（套餐子产品用「套餐名·子产品名」）、平台订单号、应退金额（留空=自动计算）、退款方式、退费日期、校区、售卖人；另有手续费、其他扣减、退费原因；学员匹配按「用户编号→联系电话→姓名」。":"必填：学员手机号、产品名称（套餐子产品用「套餐名·子产品名」）、消课数量；选填：消课日期。"}</div>
+    </div></div>
+    <div class="mft"><button class="btn ghost" onclick="maskClose()">关闭</button></div>`);
+}
+function handleImport(input, kind){
+  const file=input.files[0]; if(!file) return;
+  readImportFile(file, rows=>{
+    if(!rows.length){ toast("文件为空","err"); return; }
+    if(kind==="students"){
+      const mode=$("imp_mode")?$("imp_mode").value:"skip";
+      const r=importStudents(rows, mode);
+      if(r.errs.length){ importErrorFile(r.errs); }
+      toast(`导入完成：新增 ${r.add}，更新 ${r.upd}，跳过 ${r.skip}，失败 ${r.errs.length}（已生成错误报告）`, r.errs.length?"err":"ok");
+    }else if(kind==="payments"){
+      const r=importPayments(rows);
+      if(r.errs.length) importErrorFile(r.errs);
+      toast(`收费导入：成功 ${r.ok} 笔，失败 ${r.errs.length}（已生成错误报告）`, r.errs.length?"err":"ok");
+    }else if(kind==="refunds"){
+      const r=importRefunds(rows);
+      if(r.errs.length) importErrorFile(r.errs);
+      toast(`退费申请导入：成功 ${r.ok} 笔（待审核），失败 ${r.errs.length}（已生成错误报告）`, r.errs.length?"err":"ok");
+    }else{
+      const r=importConsumptions(rows);
+      if(r.errs.length) importErrorFile(r.errs);
+      toast(`消课导入：成功 ${r.ok} 条，失败 ${r.errs.length}（已生成错误报告）`, r.errs.length?"err":"ok");
+    }
+    maskClose(); renderPage();
+  });
+}
+
+/* ---------------- 设置 ---------------- */
+function pageSettings(){
+  topbar("设置与数据","机构信息 · 云端同步 · 数据管理 · 备份 · 审计日志");
+  const logs=DB.logs;
+  const sc=syncConfig();
+  $("view").innerHTML=`
+  <div class="grid g2" style="grid-template-columns:1fr 1.4fr">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="hd"><h3>⚙️ 机构设置</h3></div>
+        <div class="bd"><div class="frm">
+          <div class="f2">
+            <div class="frow"><label>机构名称（用于报表文件名）</label><input id="set_org" value="${esc(DB.org.name)}"></div>
+            <div class="frow"><label>续费预警阈值（剩余金额 ≤ 元）</label><input id="set_thr" type="number" min="0" step="0.01" value="${DB.org.amountThreshold}"><div style="font-size:11px;color:var(--ink2)">学员任一产品剩余金额低于该值时，首页/详情/报表标记「需续费」（默认 500 元）</div></div>
+          </div>
+          <div class="frow"><label>当前操作人（记录在流水与日志）</label><input id="set_op" value="${esc(DB.org.operator)}"></div>
+          <div class="frow"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="set_mask" ${DB.org.phoneMask?"checked":""} style="width:16px;height:16px"> 学员列表隐藏联系电话中间四位（掩码显示）</label></div>
+          <button class="btn" onclick="saveSettings()">保存设置</button>
+        </div></div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>👤 账号与角色</h3><span style="font-size:12px;color:var(--ink2)">${DB.users.length} 个账号</span></div>
+        <div class="bd">
+          <p class="hint" style="margin-bottom:10px">角色权限：<b>管理员</b>全部 · <b>校长</b>审批退费/报表 · <b>财务</b>收费/退费/导出 · <b>教务</b>学员/排课/考勤。</p>
+          <table class="tbl" style="margin-bottom:10px">
+            <thead><tr><th>用户名</th><th>姓名</th><th>角色</th><th style="width:96px">操作</th></tr></thead>
+            <tbody>${DB.users.map(u=>`<tr>
+              <td class="mono">${esc(u.username)}</td><td>${esc(u.name)}</td><td>${ROLE_CN[u.role]||u.role}</td>
+              <td><button class="btn sm ghost" onclick="openUserModal('${u.username}')">编辑</button>
+                  <button class="btn sm red" onclick="delUser('${u.username}')">删</button></td></tr>`).join("")}
+            </tbody></table>
+          <button class="btn sun" onclick="openUserModal()">＋ 新增账号</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>🏷️ 自定义字段</h3><span style="font-size:12px;color:var(--ink2)">学员档案/导入模板自动带出</span></div>
+        <div class="bd">
+          <p class="hint" style="margin-bottom:10px">自定义学员字段（如「意向科目」），将同步显示在学员表单、详情与导入模板中。</p>
+          <table class="tbl" style="margin-bottom:10px">
+            <thead><tr><th>字段名(Key)</th><th>显示名称</th><th style="width:60px">操作</th></tr></thead>
+            <tbody>${(DB.customFields||[]).map(x=>`<tr><td class="mono">${esc(x.key)}</td><td>${esc(x.label)}</td>
+              <td><button class="btn sm red" onclick="delCustomField('${x.key}')">删</button></td></tr>`).join("")||`<tr><td colspan="3" style="color:var(--ink2)">暂无自定义字段</td></tr>`}
+            </tbody></table>
+          <div class="f2">
+            <div class="frow"><label>显示名称</label><input id="cf_new_label" placeholder="如：意向科目"></div>
+            <div class="frow"><label>字段名(Key)</label><input id="cf_new_key" placeholder="如：intent（英文）"></div>
+          </div>
+          <button class="btn sun" onclick="addCustomField()">＋ 添加字段</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>💾 数据备份 / 恢复</h3></div>
+        <div class="bd">
+          <p class="hint" style="margin-bottom:10px">数据保存在本机浏览器 localStorage。换电脑前请先导出备份，新电脑导入即可迁移。</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" onclick="backupJSON()">⬇ 导出备份(JSON)</button>
+            <label class="btn sun" style="cursor:pointer">⬆ 导入备份<label><input type="file" accept=".json" style="display:none" onchange="restoreJSON(this)"></label></label>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-color:#1B6EC2">
+        <div class="hd"><h3 style="color:#1B6EC2">☁️ 云端同步（WebDAV）</h3><span style="font-size:12px;color:var(--ink2)">多台电脑/浏览器共享同一份数据</span></div>
+        <div class="bd">
+          <p class="hint" style="margin-bottom:10px">开启后：<b>每次保存自动上传</b>到云端文件，<b>打开系统时自动拉取</b>最新数据——前台收费、教务消课、财务审批各用各的电脑，数据实时互通，无需互发文件。推荐坚果云（免费，支持 WebDAV）。</p>
+          <div class="frm">
+            <div class="frow"><label>同步地址（WebDAV）</label><input id="sync_url" value="${esc(sc.url||"")}" placeholder="https://dav.jianguoyun.com/dav/课消系统数据.json"></div>
+            <div class="f2">
+              <div class="frow"><label>账号（邮箱/用户名）</label><input id="sync_user" value="${esc(sc.user||"")}"></div>
+              <div class="frow"><label>应用密码（非登录密码）</label><input id="sync_pass" type="password" value="${esc(sc.pass||"")}" placeholder="坚果云：账户信息→安全选项→应用密码"></div>
+            </div>
+            <div class="frow"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="sync_auto" ${sc.auto?"checked":""} style="width:16px;height:16px"> 启用自动同步（保存后自动上传 + 打开时自动拉取）</label></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+              <button class="btn" onclick="syncSave()">💾 保存同步设置</button>
+              <button class="btn ghost" onclick="webdavTest()">📡 测试连接</button>
+              <button class="btn sun" onclick="webdavPull()">⬇ 立即拉取</button>
+              <button class="btn" onclick="webdavPush()">⬆ 立即上传</button>
+              <button class="btn ghost" onclick="openSyncHelp()">❓ 同步说明</button>
+            </div>
+            <div class="note" id="sync_state">${sc.lastSync?("最近同步："+esc(sc.lastSync)):"尚未同步（保存设置后可「立即上传」）"}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-color:var(--sun)">
+        <div class="hd"><h3 style="color:#A96E0A">🧹 数据清理</h3></div>
+        <div class="bd">
+          <p class="hint" style="margin-bottom:10px">系统不内置任何演示/自动生成数据，初始即为空库（仅保留默认账号）。如需重新开始，可一键清空全部业务数据（学员、产品、流水、班次、日志）。</p>
+          <button class="btn red" onclick="ask('清空全部数据','将删除所有学员、产品、流水与班次，此操作不可恢复！',()=>{resetDB();renderNav();renderPage();toast('已清空','ok')})">清空数据</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="hd"><h3>📜 审计日志（操作留痕）</h3>
+        <span style="font-size:12px;color:var(--ink2)">共 ${logs.length} 条</span>
+        <button class="btn sm ghost" onclick="exportLogs()">⬇ 导出日志 CSV</button></div>
+      <div class="tablewrap" style="max-height:600px"><table class="tbl">
+        <thead><tr><th>时间</th><th>操作</th><th>详情</th><th>操作人</th><th>角色</th><th>来源</th></tr></thead>
+        <tbody>${logs.map(l=>`<tr><td class="mono" style="font-size:12px">${l.time}</td><td><b>${esc(l.op)}</b></td>
+          <td style="white-space:normal;max-width:420px">${esc(l.detail)}</td><td>${esc(l.operator)}</td><td>${esc(l.role||"")}</td><td>${esc(l.ip||"—")}</td></tr>`).join("")||`<tr><td colspan="6"><div class="blank">暂无日志</div></td></tr>`}
+        </tbody></table></div>
+    </div>
+  </div>`;
+}
+function saveSettings(){
+  DB.org.name=$("set_org").value.trim()||"青禾营地";
+  DB.org.operator=$("set_op").value.trim()||"教务老师";
+  DB.org.phoneMask=!!$("set_mask").checked;
+  DB.org.amountThreshold=Math.max(0,parseFloat($("set_thr").value)||0); // 续费预警阈值（金额，元）
+  log("设置","机构设置已更新");
+  saveDB(); renderNav(); renderPage(); toast("设置已保存 ✓","ok");
+}
+function openUserModal(username){
+  const u=username?DB.users.find(x=>x.username===username):null;
+  const roles=["admin","principal","cashier","teacher"];
+  openModal(`
+    <div class="mhd"><h3>${u?"编辑账号":"新增账号"}</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd"><div class="frm">
+      <div class="f2">
+        <div class="frow"><label>用户名 <span class="req">*</span></label><input id="u_user" value="${u?esc(u.username):""}" ${u?"readonly":""} placeholder="登录用（英文）"></div>
+        <div class="frow"><label>姓名 <span class="req">*</span></label><input id="u_name" value="${u?esc(u.name):""}" placeholder="显示名称"></div>
+      </div>
+      <div class="f2">
+        <div class="frow"><label>密码 <span class="req">*</span></label><input id="u_pass" value="${u?esc(u.password):""}" placeholder="默认 123456"></div>
+        <div class="frow"><label>角色</label><select id="u_role">${roles.map(r=>`<option value="${r}" ${u&&u.role===r?"selected":""}>${ROLE_CN[r]}</option>`).join("")}</select></div>
+      </div>
+      <button class="btn ember" onclick="saveUser('${u?u.username:""}')">保存账号</button>
+    </div></div>`);
+}
+function saveUser(username){
+  const user=$("u_user").value.trim(), name=$("u_name").value.trim(), pass=$("u_pass").value;
+  if(!user||!name||!pass) return toast("请完整填写用户名/姓名/密码","err");
+  if(!/^[a-zA-Z][a-zA-Z0-9_]{1,19}$/.test(user)) return toast("用户名需以字母开头，2-20位字母数字下划线","err");
+  if(username){
+    const u=DB.users.find(x=>x.username===username);
+    Object.assign(u,{name,password:pass,role:$("u_role").value});
+    log("编辑账号", user);
+  }else{
+    if(DB.users.some(x=>x.username===user)) return toast("用户名已存在","err");
+    DB.users.push({username:user,password:pass,name,role:$("u_role").value});
+    log("新增账号", user+"（"+ROLE_CN[$("u_role").value]+"）");
+  }
+  saveDB(); maskClose(); pageSettings(); toast("账号已保存 ✓","ok");
+}
+function delUser(username){
+  const u=DB.users.find(x=>x.username===username); if(!u) return;
+  if(u.role==="admin" && DB.users.filter(x=>x.role==="admin").length<=1) return toast("不能删除最后一个管理员账号","err");
+  if(SESSION&&SESSION.user===username) return toast("不能删除当前登录账号","err");
+  ask("删除账号", `确认删除账号「${u.name}（${u.username}）」？`, ()=>{
+    DB.users=DB.users.filter(x=>x.username!==username);
+    log("删除账号", username);
+    saveDB(); pageSettings(); toast("已删除","ok");
+  });
+}
+function addCustomField(){
+  const label=$("cf_new_label").value.trim(), key=$("cf_new_key").value.trim();
+  if(!label) return toast("请填写字段显示名称","err");
+  if(!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) return toast("字段名(Key)需为字母开头（英文）","err");
+  if((DB.customFields||[]).some(x=>x.key===key)) return toast("字段名已存在","err");
+  DB.customFields.push({key,label});
+  log("自定义字段", "添加「"+label+"」("+key+")");
+  saveDB(); pageSettings(); toast("字段已添加 ✓","ok");
+}
+function delCustomField(key){
+  ask("删除自定义字段","删除后学员档案中该字段数据将不再展示，确认？", ()=>{
+    DB.customFields=(DB.customFields||[]).filter(x=>x.key!==key);
+    log("自定义字段", "删除 "+key);
+    saveDB(); pageSettings(); toast("已删除","ok");
+  });
+}
+function exportLogs(){
+  downloadCSV([["时间","操作","详情","操作人","角色","来源"],
+    ...DB.logs.map(l=>[l.time,l.op,l.detail||"",l.operator||"",l.role||"",l.ip||""])],
+    (DB.org.name||"营地")+"_审计日志_"+todayStr()+".csv");
+  toast("审计日志已导出 ✓","ok");
+}
+function backupJSON(){
+  download(JSON.stringify(DB,null,2), (DB.org.name||"营地")+"_课消数据备份_"+todayStr()+".json","application/json");
+  toast("备份已导出 ✓","ok");
+}
+function restoreJSON(input){
+  const file=input.files[0]; if(!file) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(String(rd.result||""));
+      if(!d.students||!d.payments) throw new Error("文件不是本系统的备份格式");
+      DB=d; saveDB(); renderNav(); renderPage();
+      toast("备份已恢复 ✓","ok");
+    }catch(e){ toast("备份文件无效："+e.message,"err"); }
+  };
+  rd.readAsText(file,"utf-8");
+}
+
+/* ---------------- 云端同步（WebDAV 多机数据共享） ---------------- */
+const SYNC_KEY=LS_KEY+"_sync";
+let SYNC_BUSY=false, SYNC_JUST_PULLED=false, SYNC_TIMER=null;
+const syncConfig=()=>{ try{ return JSON.parse(localStorage.getItem(SYNC_KEY)||"null")||{}; }catch(e){ return {}; } };
+const saveSyncConfig=c=>{ try{ localStorage.setItem(SYNC_KEY,JSON.stringify(c)); }catch(e){} };
+const syncAuth=c=>"Basic "+btoa(unescape(encodeURIComponent((c.user||"")+":"+(c.pass||""))));
+function syncFetch(method, c, body){
+  return fetch(c.url,{method,headers:{Authorization:syncAuth(c),"Content-Type":"application/json;charset=utf-8"},body})
+    .then(async r=>({status:r.status, ok:r.ok, text:await r.text()}));
+}
+function syncErrHint(e){
+  const msg=String((e&&e.message)||e);
+  if(/Failed to fetch|NetworkError|CORS|blocked/i.test(msg))
+    return "浏览器跨域/网络限制：部分网盘 WebDAV 不允许网页直接读写（CORS）。可将本 HTML 部署到自己服务器上使用，或用「导出备份→发送→导入备份」手动同步。";
+  return "同步失败："+msg;
+}
+function syncSetState(html){ const el=$("sync_state"); if(el) el.innerHTML=html; }
+function syncApplyRemote(d){
+  try{ localStorage.setItem(LS_KEY+"_backup", JSON.stringify(DB)); }catch(e){} // 覆盖前自动备份本机
+  SYNC_JUST_PULLED=true; setTimeout(()=>{ SYNC_JUST_PULLED=false; },5000);
+  DB=d; saveDB(); renderNav(); renderPage();
+  toast("已拉取云端最新数据 ✓（本机旧数据已备份）","ok");
+}
+function webdavTest(){
+  const c=syncConfig();
+  if(!c.url||!c.user||!c.pass) return toast("请先填写同步地址/账号/应用密码","err");
+  syncSetState("📡 正在测试连接…");
+  syncFetch("GET",c).then(res=>{
+    if(res.status===401) syncSetState("❌ 认证失败：账号或应用密码不正确");
+    else if(res.status>=200&&res.status<500) syncSetState("✅ 连接成功"+(res.status===404?"（云端还没有数据文件，点「立即上传」即可创建）":"（云端文件可读取）"));
+    else syncSetState("❌ 服务器返回状态："+res.status);
+    toast("连接测试完成","ok");
+  }).catch(e=>{ syncSetState("❌ "+syncErrHint(e)); });
+}
+function webdavPush(){
+  const c=syncConfig();
+  if(!c.url||!c.user||!c.pass) return toast("请先填写同步地址/账号/应用密码","err");
+  if(SYNC_BUSY) return;
+  SYNC_BUSY=true;
+  DB.syncAt=new Date().toISOString();
+  saveDB(); // 本地先落同步时间戳（SYNC_BUSY 保护，不会再触发上传）
+  syncSetState("⬆️ 正在上传…");
+  syncFetch("PUT",c,JSON.stringify(DB)).then(res=>{
+    SYNC_BUSY=false;
+    if(res.ok||res.status===201||res.status===204){
+      const sc=syncConfig(); sc.lastSync=todayStr()+" "+new Date().toTimeString().slice(0,8); saveSyncConfig(sc);
+      syncSetState("✅ 已上传："+esc(sc.lastSync)+"（学员 "+DB.students.length+" · 收费 "+DB.payments.length+" · 退费 "+DB.refunds.length+"）");
+      toast("已上传到云端 ✓","ok");
+    }else{
+      syncSetState("❌ 上传失败：HTTP "+res.status+" "+(res.text||"").slice(0,100));
+    }
+  }).catch(e=>{ SYNC_BUSY=false; syncSetState("❌ "+syncErrHint(e)); });
+}
+function webdavPull(){
+  const c=syncConfig();
+  if(!c.url||!c.user||!c.pass) return toast("请先填写同步地址/账号/应用密码","err");
+  if(SYNC_BUSY) return;
+  SYNC_BUSY=true;
+  syncSetState("⬇️ 正在拉取…");
+  syncFetch("GET",c).then(res=>{
+    SYNC_BUSY=false;
+    if(res.status===404){ syncSetState("ℹ️ 云端暂无数据文件：保存同步设置后点「立即上传」即可创建"); return; }
+    if(!res.ok){ syncSetState("❌ 拉取失败：HTTP "+res.status); return; }
+    let d=null; try{ d=JSON.parse(res.text); }catch(e){}
+    if(!d||!d.students){ syncSetState("❌ 云端文件不是本系统的数据格式（可能被其他文件占用，请核对同步地址）"); return; }
+    const localAt=DB.syncAt||"", remoteAt=d.syncAt||"";
+    if(remoteAt>localAt){
+      ask("云端数据较新","云端("+remoteAt.replace("T"," ").slice(0,19)+") 比本机("+(localAt||"无")+")新。<br>用云端覆盖本机？（覆盖前本机旧数据会自动备份）",()=>syncApplyRemote(d));
+    }else if(localAt>remoteAt){
+      ask("本机数据较新","本机("+localAt.replace("T"," ").slice(0,19)+") 比云端("+(remoteAt||"无")+")新。<br>上传本机覆盖云端？",()=>webdavPush());
+    }else{
+      syncSetState("✅ 已是最新（双方数据一致）"); toast("已是最新 ✓","ok");
+    }
+  }).catch(e=>{ SYNC_BUSY=false; syncSetState("❌ "+syncErrHint(e)); });
+}
+function syncSave(){
+  const c={url:$("sync_url").value.trim(), user:$("sync_user").value.trim(), pass:$("sync_pass").value, auto:!!$("sync_auto").checked};
+  if(!c.url) return toast("请填写同步地址","err");
+  if(c.auto&&(!c.user||!c.pass)) return toast("启用自动同步需填写账号与应用密码","err");
+  saveSyncConfig(c);
+  syncSetState("✅ 已保存"+(c.auto?"，自动同步已开启（保存后自动上传）":"（自动同步未开启）"));
+  toast("同步设置已保存 ✓","ok");
+  if(c.auto&&c.url&&c.user&&c.pass) setTimeout(webdavPush,600);
+}
+function maybeAutoSync(){
+  const c=syncConfig();
+  if(!(c.auto&&c.url&&c.user&&c.pass)||SYNC_BUSY||SYNC_JUST_PULLED) return;
+  clearTimeout(SYNC_TIMER);
+  SYNC_TIMER=setTimeout(webdavPush,2500); // 每次保存后 2.5 秒静默上传
+}
+function openSyncHelp(){
+  openModal(`
+    <div class="mhd"><h3>☁️ 云端同步说明</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd" style="max-height:70vh;overflow:auto;line-height:1.9;font-size:13.5px">
+      <div class="note"><b>适用场景</b>：前台收费、教务消课、财务审批各用各的电脑/浏览器，数据要实时互通，避免各存各的版本。</div>
+      <b>工作方式</b>：本系统把整份数据（JSON）自动上传到你的网盘 WebDAV 文件；每次<b>保存后自动上传</b>，<b>打开系统时自动拉取</b>最新数据。冲突规则：<b>后保存者覆盖</b>（覆盖前本机旧数据自动备份）。<br><br>
+      <b>推荐：坚果云（免费）</b>：<br>
+      ① 注册登录坚果云 → 右上角头像 →「账户信息」→「安全选项」→「第三方应用管理」→「添加应用密码」，生成一个专用密码；<br>
+      ② 同步地址填：<code>https://dav.jianguoyun.com/dav/课消系统数据.json</code>（可先建「课消系统」文件夹，把文件名放里面）；<br>
+      ③ 账号填坚果云登录邮箱，密码填<b>应用密码</b>（不是登录密码）；<br>
+      ④ 点「测试连接」，通过后「保存同步设置」并「立即上传」，其他电脑同样配置后打开即自动同步。<br><br>
+      <b>其他支持 WebDAV 的网盘/服务</b>：群晖 NAS、Nextcloud、Seafile、WebDAV 服务器等均可，把地址换成对应链接。<br><br>
+      <b>如果浏览器提示跨域无法直连（CORS 限制）</b>：<br>
+      方案A：把本 HTML 文件部署到自己的服务器/群晖 Web 目录后访问（推荐，可完全自动同步）；<br>
+      方案B：手动同步——任一电脑「导出备份(JSON)」→ 发到工作群/网盘 → 其他电脑「导入备份」，一样能对齐数据。
+    </div></div>
+    <div class="mft"><button class="btn ember" onclick="maskClose()">知道了</button></div>`);
+}
+
+/* ---------------- 启动 ---------------- */
+DB=loadDB()||defaultDB();
+if(!DB.org) DB.org={name:"青禾营地",amountThreshold:500,operator:"教务老师"};
+if(!DB.users||!DB.users.length) DB.users=defaultDB().users;      // 旧数据补账号
+if(!DB.customFields) DB.customFields=[];                          // 旧数据补自定义字段
+if(DB.org.phoneMask==null) DB.org.phoneMask=true;                 // 旧数据补掩码开关
+if(DB.org.amountThreshold==null) DB.org.amountThreshold=500;      // 旧数据补金额预警阈值（元）
+if(restoreSession()){
+  renderNav();
+  renderPage();
+}else{
+  renderLogin();
+}
+// 云端同步：启动后自动拉取最新（已配置自动同步时）
+(function(){
+  const sc=syncConfig();
+  if(sc.auto&&sc.url&&sc.user&&sc.pass) setTimeout(()=>webdavPull(),900);
+})();
+// 书签直达：地址栏支持 #dash / #students / #products / #finance / #classes / #invites / #reports / #settings
+(function(){
+  const TABS=["dash","students","products","finance","classes","invites","reports","settings"];
+  const pick=()=>{
+    const hk=(typeof location!=="undefined"&&location.hash||"").replace("#","");
+    if(TABS.includes(hk)) go(hk);
+  };
+  if(typeof window!=="undefined"&&window.addEventListener) window.addEventListener("hashchange",pick);
+  pick();
+})();
+// 演示提示（首次使用）
+if(!localStorage.getItem("campedu_seen_v1") && DB.students.length===0){
+  localStorage.setItem("campedu_seen_v1","1");
+  setTimeout(()=>{
+    openModal(`
+      <div class="mhd"><h3>⛺ 欢迎使用课消管理系统</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+      <div class="mbd">
+        <p style="line-height:2;font-size:14px">本系统面向<b>青少年营地教育</b>，实现「学员 → 产品 → 收费/退费 → 排课考勤课消 → 邀约上课 → 报表核对」全链路：</p>
+        <div class="note" style="margin:10px 0">🎒 学员档案：单个/批量导入，手机号查重<br>
+        🧩 套餐课消：自动按金额拆分，精准核算已消/待消<br>
+        🗓️ 考勤点名：到课自动扣课时并记录课消金额<br>
+        📣 邀约中心：一键生成家长邀约话术、跟进状态<br>
+        📊 报表导出：已课消 / 待课消（预收）/ 资金流水</div>
+        <p style="font-size:12.5px;color:var(--ink2)">系统初始为空库：请先在「设置」中配置机构信息，再从「学员档案」「产品」开始录入，收费与退费支持单个操作与批量导入。</p>
+      </div>
+      <div class="mft"><button class="btn ember" onclick="maskClose()">开始使用</button></div>`);
+  },600);
+}
+</script>
+</body>
+</html>
+/script>
+</body>
+</html>
