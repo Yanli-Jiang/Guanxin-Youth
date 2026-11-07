@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>青禾营地 · 课消管理系统</title>
+<title>课消管理系统</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -222,14 +222,13 @@ input[type=date]{min-width:0}
     <div class="brand">
       <div class="logo">
         <div class="badge">⛺</div>
-        <div><h1 id="brandName">青禾营地</h1><p>COURSE · LEDGER</p></div>
+        <div><h1 id="brandName">课消管理系统</h1><p>COURSE · LEDGER</p></div>
       </div>
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="foot">
       <div>机构：<b id="footOrg">—</b></div>
       <div>当前用户：<b id="footUser">—</b> <span id="footRole" style="font-size:11px;opacity:.85"></span></div>
-      <button class="btn sm ghost" style="margin-top:8px;border-color:rgba(255,255,255,.4);color:#EDF3E8;box-shadow:none" onclick="logout()">⎋ 退出登录</button>
       <div style="font-size:11px;opacity:.8;margin-top:8px">数据自动保存在本机浏览器</div>
     </div>
   </aside>
@@ -244,7 +243,7 @@ input[type=date]{min-width:0}
 <script>
 "use strict";
 /* ================================================================
-   青禾营地 · 青少年营地课消管理系统（单文件版）
+   课消管理系统（单文件版）
    数据模型：
    students  学员档案
    singles   单品产品
@@ -262,6 +261,14 @@ let DB = null;
 let CUR = "dash";
 let FILTER = {};   // 各页筛选状态
 let TMP = {};      // 临时编辑对象
+let SERVER=null;        // 局域网服务器模式 {edit,key,host}（null=单机本地模式）
+let SERVER_REV=0;       // 已应用的服务器数据版本
+let SERVER_SSE=null;    // 实时推送句柄
+let SERVER_RETRY=null;  // 服务器探测重试计时器
+let PUBLISH_MODE="manual";  // 发布方式：manual=手动（点「发布数据」才上传） auto=保存后自动上传
+let DIRTY=0;                // 手动模式下是否有未发布更改
+let STATIC=null;            // 静态发布模式 {url}：页面托管在静态网址，数据来自同目录 data.json（只读）
+const PUBLISH_KEY=LS_KEY+"_publish_mode";
 
 /* ---------------- 工具 ---------------- */
 const $ = id => document.getElementById(id);
@@ -333,7 +340,7 @@ function renderLogin(){
   <div style="min-height:100vh;display:grid;place-items:center;padding:24px">
     <div class="card" style="max-width:440px;width:100%;padding:36px 38px;text-align:center">
       <div style="width:64px;height:64px;border-radius:18px;background:var(--ember);display:grid;place-items:center;font-size:34px;margin:0 auto;box-shadow:0 6px 18px rgba(232,100,47,.4);transform:rotate(-6deg)">⛺</div>
-      <h1 style="font-family:var(--disp);font-size:26px;color:var(--pine2);margin:16px 0 4px;letter-spacing:1px">${esc(DB.org.name||"青禾营地")} · 课消管理系统</h1>
+      <h1 style="font-family:var(--disp);font-size:26px;color:var(--pine2);margin:16px 0 4px;letter-spacing:1px">${esc(DB.org.name||"课消管理系统")}</h1>
       <p style="color:var(--ink2);font-size:13px;letter-spacing:2px;margin-bottom:24px">学员资产与课消管理 · 校管家参考版</p>
       <div class="frm" style="text-align:left">
         <div class="frow"><label>用户名</label><input id="lg_user" autocomplete="username" placeholder="请输入用户名"></div>
@@ -351,7 +358,13 @@ function renderLogin(){
   setTimeout(()=>{ const u=$("lg_user"); if(u) u.focus(); },80);
 }
 
-function saveDB(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }catch(e){ toast("数据保存失败："+e.message,"err"); } maybeAutoSync(); }
+function saveDB(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }catch(e){ toast("数据保存失败："+e.message,"err"); }
+  if(STATIC){ toast("本页为静态发布版（只读）：数据来自网页上的 data.json。请在本机编辑，导出 data.json 后上传覆盖本网页目录","err"); return; }
+  if(SERVER){
+    if(PUBLISH_MODE==="auto"){ serverPush(); }
+    else { DIRTY=1; refreshPublishBtn(); }
+  }
+}
 function loadDB(){
   try{
     const raw = localStorage.getItem(LS_KEY);
@@ -362,7 +375,7 @@ function loadDB(){
   }catch(e){ return null; }
 }
 function defaultDB(){
-  return { org:{name:"青禾营地", amountThreshold:500, operator:"教务老师", phoneMask:true}, users:[
+  return { org:{name:"", amountThreshold:500, operator:"教务老师", phoneMask:true}, users:[
     {username:"admin",     password:"123456", name:"管理员", role:"admin"},
     {username:"xiaozhang", password:"123456", name:"校长",   role:"principal"},
     {username:"caiwu",     password:"123456", name:"财务",   role:"cashier"},
@@ -867,11 +880,11 @@ function renderNav(){
     }
     return `<a data-k="${n.k}" class="${CUR===n.k?"on":""}" onclick="go('${n.k}')"><span class="ico">${n.i}</span>${n.t}${badge}</a>`;
   }).join("");
-  $("brandName").textContent=DB.org.name||"青禾营地";
+  $("brandName").textContent=DB.org.name||"课消管理系统";
   $("footOrg").textContent=DB.org.name||"—";
   $("footUser").textContent=(SESSION&&SESSION.name)||DB.org.operator||"—";
   $("footRole").textContent=SESSION?("· "+ROLE_CN[SESSION.role]):"";
-  document.title=(DB.org.name||"青禾营地")+" · 课消管理系统";
+  document.title=(DB.org.name||"课消管理系统")+" · 课消管理系统";
 }
 function go(k){
   CUR=k; renderNav(); renderPage();
@@ -893,6 +906,9 @@ function topbar(title, sub, extra){
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       ${extra||""}
       <span class="datechip">📅 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 · ${weekCN(todayStr())}</span>
+      ${SERVER?`<span class="datechip" style="border-color:${SERVER.edit?"#2E9E5B":"#C0620A"};color:${SERVER.edit?"#2E9E5B":"#C0620A"}">${SERVER.edit?"🟢 服务器模式·可录入":"🟡 服务器模式·只读"}</span>`:""}
+      ${STATIC?`<span class="datechip" style="border-color:#2E9E5B;color:#2E9E5B">📄 静态发布版·数据来自 data.json</span>`:""}
+      ${publishBtnHtml()}
     </div>`;
 }
 function toast(msg,type){
@@ -2006,7 +2022,7 @@ function handleImport(input, kind){
 
 /* ---------------- 设置 ---------------- */
 function pageSettings(){
-  topbar("设置与数据","机构信息 · 云端同步 · 数据管理 · 备份 · 审计日志");
+  topbar("设置与数据","机构信息 · 数据管理 · 备份 · 审计日志");
   const logs=DB.logs;
   const sc=syncConfig();
   $("view").innerHTML=`
@@ -2060,29 +2076,34 @@ function pageSettings(){
           <p class="hint" style="margin-bottom:10px">数据保存在本机浏览器 localStorage。换电脑前请先导出备份，新电脑导入即可迁移。</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn" onclick="backupJSON()">⬇ 导出备份(JSON)</button>
+            <button class="btn" onclick="exportDataJson()">⬇ 导出 data.json（网页发布用）</button>
             <label class="btn sun" style="cursor:pointer">⬆ 导入备份<label><input type="file" accept=".json" style="display:none" onchange="restoreJSON(this)"></label></label>
           </div>
         </div>
       </div>
-      <div class="card" style="border-color:#1B6EC2">
-        <div class="hd"><h3 style="color:#1B6EC2">☁️ 云端同步（WebDAV）</h3><span style="font-size:12px;color:var(--ink2)">多台电脑/浏览器共享同一份数据</span></div>
+      <div class="card" style="border-color:#2E9E5B">
+        <div class="hd"><h3 style="color:#2E9E5B">🖥️ 局域网实时共享（服务器模式）</h3><span style="font-size:12px;color:var(--ink2)">本机作服务器，同事浏览器实时查看</span></div>
         <div class="bd">
-          <p class="hint" style="margin-bottom:10px">开启后：<b>每次保存自动上传</b>到云端文件，<b>打开系统时自动拉取</b>最新数据——前台收费、教务消课、财务审批各用各的电脑，数据实时互通，无需互发文件。推荐坚果云（免费，支持 WebDAV）。</p>
+          <p class="hint" style="margin-bottom:10px">把本文件夹放到一台<b>常开</b>的电脑上，运行 <b>server.py</b>（或双击「启动服务器.bat」）；同事用浏览器打开 <b>http://本机IP:8000</b> 即可实时查看数据——本机录入后，同事界面 1~2 秒内自动刷新（服务器模式）。未运行服务器时本页自动回退为单机模式，数据仍保存在本机浏览器。</p>
           <div class="frm">
-            <div class="frow"><label>同步地址（WebDAV）</label><input id="sync_url" value="${esc(sc.url||"")}" placeholder="https://dav.jianguoyun.com/dav/课消系统数据.json"></div>
             <div class="f2">
-              <div class="frow"><label>账号（邮箱/用户名）</label><input id="sync_user" value="${esc(sc.user||"")}"></div>
-              <div class="frow"><label>应用密码（非登录密码）</label><input id="sync_pass" type="password" value="${esc(sc.pass||"")}" placeholder="坚果云：账户信息→安全选项→应用密码"></div>
+              <div class="frow"><label>录入口令（本机填写，同事留空=只读）</label><input id="sv_key" type="password" value="${esc((function(){try{return localStorage.getItem(LS_KEY+"_editkey")||""}catch(e){return ""}})())}" placeholder="默认 qinghe2026，可在 server.py 修改 EDIT_KEY"></div>
+              <div class="frow"><label>服务器地址</label><input id="sv_url" value="${SERVER?("http://"+SERVER.host):""}" readonly placeholder="运行 server.py 后自动显示"></div>
             </div>
-            <div class="frow"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="sync_auto" ${sc.auto?"checked":""} style="width:16px;height:16px"> 启用自动同步（保存后自动上传 + 打开时自动拉取）</label></div>
+            <div class="frow"><label>发布方式（本机录入后的上传时机）</label>
+              <span style="display:inline-flex;gap:16px;flex-wrap:wrap">
+                <label style="display:inline-flex;align-items:center;gap:4px"><input type="radio" name="pub_mode" ${PUBLISH_MODE==="manual"?"checked":""} onchange="setPublishMode('manual')"> 手动发布：点「📤 发布数据」才上传（推荐）</label>
+                <label style="display:inline-flex;align-items:center;gap:4px"><input type="radio" name="pub_mode" ${PUBLISH_MODE==="auto"?"checked":""} onchange="setPublishMode('auto')"> 自动发布：保存后立即上传</label>
+              </span>
+            </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
-              <button class="btn" onclick="syncSave()">💾 保存同步设置</button>
-              <button class="btn ghost" onclick="webdavTest()">📡 测试连接</button>
-              <button class="btn sun" onclick="webdavPull()">⬇ 立即拉取</button>
-              <button class="btn" onclick="webdavPush()">⬆ 立即上传</button>
-              <button class="btn ghost" onclick="openSyncHelp()">❓ 同步说明</button>
+              <button class="btn" onclick="serverSaveKey()">💾 保存并验证口令</button>
+              <button class="btn ghost" onclick="serverTest()">📡 测试连接</button>
+              <button class="btn sun" onclick="serverPullNow()">⬇ 立即刷新（拉取服务器数据）</button>
+              <button class="btn ember" onclick="publishNow()">📤 发布数据到服务器</button>
+              <button class="btn ghost" onclick="exportDataJson()">⬇ 导出 data.json（静态网址发布用）</button>
             </div>
-            <div class="note" id="sync_state">${sc.lastSync?("最近同步："+esc(sc.lastSync)):"尚未同步（保存设置后可「立即上传」）"}</div>
+            <div class="note" id="sv_state">${SERVER?("服务器模式已启用 · "+(SERVER.edit?"可录入":"只读（未配置口令）")):"当前为单机模式（未检测到服务器）"}</div>
           </div>
         </div>
       </div>
@@ -2107,7 +2128,7 @@ function pageSettings(){
   </div>`;
 }
 function saveSettings(){
-  DB.org.name=$("set_org").value.trim()||"青禾营地";
+  DB.org.name=$("set_org").value.trim()||"课消管理系统";
   DB.org.operator=$("set_op").value.trim()||"教务老师";
   DB.org.phoneMask=!!$("set_mask").checked;
   DB.org.amountThreshold=Math.max(0,parseFloat($("set_thr").value)||0); // 续费预警阈值（金额，元）
@@ -2179,8 +2200,8 @@ function exportLogs(){
   toast("审计日志已导出 ✓","ok");
 }
 function backupJSON(){
-  download(JSON.stringify(DB,null,2), (DB.org.name||"营地")+"_课消数据备份_"+todayStr()+".json","application/json");
-  toast("备份已导出 ✓","ok");
+  download((DB.org.name||"营地")+"_课消数据备份_"+todayStr()+".json", JSON.stringify(DB,null,2),"application/json");
+  toast("备份已导出 ✓ 此文件用于「本机导入恢复」，发布网页请用「导出 data.json」","ok");
 }
 function restoreJSON(input){
   const file=input.files[0]; if(!file) return;
@@ -2305,24 +2326,223 @@ function openSyncHelp(){
     <div class="mft"><button class="btn ember" onclick="maskClose()">知道了</button></div>`);
 }
 
+/* ---------------- 局域网实时共享（服务器模式） ----------------
+   模式说明：把本文件夹放在一台常开电脑上运行 server.py，
+   本机（配置录入口令）录入数据 → 自动上传服务器；
+   同事用浏览器打开 http://本机IP:8000 → 只读实时查看（SSE 秒级推送）。
+   服务器不可用时自动回退为单机本地模式，数据不丢失。
+============================================================ */
+const SVR_KEY_STORE=LS_KEY+"_editkey";
+async function initServerMode(){
+  const probe=async()=>{
+    let found=false;
+    try{
+      const key=localStorage.getItem(SVR_KEY_STORE)||"";
+      const r=await fetch("/api/info",{headers:key?{"X-Edit-Key":key}:{}});
+      if(r.ok){
+        const info=await r.json();
+        if(info&&info.mode==="server"){
+          found=true;
+          const prev=SERVER;
+          SERVER={edit:!!info.edit, key:key, host:(typeof location!=="undefined"&&location.host)||""};
+          if(!prev) startSSE();
+          const dr=await fetch("/api/data");
+          if(dr.ok){
+            const d=await dr.json();
+            if(d&&d.students){
+              if(prev){
+                // 服务器重启后重连：本机无业务数据则直接采用服务器数据；有则保留本机并提示手动刷新
+                if(!(DB&&(DB.students||[]).length)&&!(DB&&(DB.payments||[]).length)){
+                  applyServerData(d);
+                }else{
+                  if(typeof toast==="function") toast("服务器已连接（保留本机数据，可在设置中「立即刷新」）","ok");
+                }
+              }else{
+                SERVER_REV=d._rev||0; DB=mergeDB(d);
+              }
+            }
+          }
+          if(typeof renderNav==="function"&&SESSION) renderNav();
+          if(typeof renderPage==="function"&&CUR&&(prev||SESSION)) renderPage();
+          SERVER_RETRY=null;
+        }
+      }
+    }catch(e){ /* 服务器不可达：继续尝试静态发布 */ }
+    if(!found&&!STATIC){
+      // 静态发布模式：页面托管在 GitHub Pages/Gitee Pages 等静态网址，
+      // 数据从网页同目录 data.json 读取（只读展示；更新数据=本机导出 data.json 后上传覆盖）
+      try{
+        const sr=await fetch("data.json",{cache:"no-store"});
+        if(sr.ok){
+          const d=await sr.json();
+          if(d&&d.students){
+            STATIC={url:(typeof location!=="undefined"&&location.href)||""};
+            if(!DB||!(DB.students||[]).length){ DB=mergeDB(d); }
+            if(typeof toast==="function") toast("静态发布版：数据来自本网页目录 data.json（只读）","ok");
+            if(typeof renderNav==="function"&&SESSION) renderNav();
+            if(typeof renderPage==="function"&&CUR&&SESSION) renderPage();
+          }
+        }
+      }catch(e){}
+    }
+  };
+  await probe();
+  if(!SERVER&&!STATIC&&!SERVER_RETRY) SERVER_RETRY=setTimeout(initServerMode,30000);
+}
+function startSSE(){
+  if(SERVER_SSE) return;
+  const pull=async()=>{
+    try{
+      const r=await fetch("/api/data");
+      if(r.ok){ const d=await r.json(); if(d&&d.students&&d._rev&&d._rev!==SERVER_REV) applyServerData(d); }
+    }catch(e){}
+  };
+  if(typeof EventSource!=="undefined"){
+    try{
+      const es=new EventSource("/api/events");
+      es.onmessage=e=>{ try{ const m=JSON.parse(e.data); if(m&&m.rev&&m.rev!==SERVER_REV) pull(); }catch(err){} };
+      SERVER_SSE=es;   // 断线后 EventSource 自动重连
+      return;
+    }catch(e){}
+  }
+  SERVER_SSE={poll:setInterval(pull,8000)};  // 降级方案：8秒轮询
+}
+// 服务器/静态数据可能缺字段（旧版本或手工编辑），补全默认结构防止渲染崩溃
+function mergeDB(d){
+  try{
+    const base=defaultDB();
+    for(const k of Object.keys(base)){
+      if(typeof d[k]==="undefined"){
+        d[k]=Array.isArray(base[k])?[]:JSON.parse(JSON.stringify(base[k]));
+      }
+    }
+    if(!d.org||typeof d.org!=="object") d.org={};
+    const bo=base.org||{};
+    for(const k of Object.keys(bo)){ if(typeof d.org[k]==="undefined") d.org[k]=bo[k]; }
+    if(!d.settings||typeof d.settings!=="object") d.settings={};
+  }catch(e){}
+  return d;
+}
+function applyServerData(d){
+  if(typeof document!=="undefined"&&document.querySelector&&document.querySelector(".mask")){
+    setTimeout(()=>applyServerData(d),1500);  // 有弹窗时延后应用，避免打断录入
+    return;
+  }
+  SERVER_REV=d._rev||0;
+  DB=mergeDB(d);
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }catch(e){}
+  try{ if(typeof renderNav==="function") renderNav(); }catch(e){}
+  try{ if(typeof renderPage==="function") renderPage(); }catch(e){}
+  if(typeof toast==="function") toast("已同步服务器最新数据 ✓","ok");
+}
+let SERVER_PUSH_T=null;
+function refreshPublishBtn(){
+  try{ const b=document.getElementById("pub_btn"); if(b) b.innerHTML=publishBtnHtml(); }catch(e){}
+}
+function publishBtnHtml(){
+  if(!SERVER) return "";
+  if(PUBLISH_MODE==="auto") return `<button class="btn sm ghost" disabled style="opacity:.55">⚡ 自动发布已开启（保存即上传）</button>`;
+  return `<button id="pub_btn" class="btn ember" onclick="publishNow()" title="把本机数据上传到服务器网页，同事刷新网址即可看到">📤 发布数据${DIRTY?" <b style=\"color:#fff\">●</b>":""}</button>`;
+}
+function publishNow(){
+  if(!SERVER){ toast("未连接服务器：请在本机运行 server.py 后通过 http://IP:8000 访问本页","err"); return; }
+  if(SERVER.edit!==true){ serverAskKey(); return; }
+  DIRTY=0; serverPush();
+  toast("正在发布到服务器…","ok");
+}
+function setPublishMode(m){
+  PUBLISH_MODE=(m==="auto")?"auto":"manual";
+  try{ localStorage.setItem(PUBLISH_KEY,PUBLISH_MODE); }catch(e){}
+  refreshPublishBtn();
+  toast(PUBLISH_MODE==="auto"?"已切换为自动发布：每次保存后立即上传":"已切换为手动发布：点「📤 发布数据」才上传","ok");
+}
+function exportDataJson(){
+  const d=JSON.parse(JSON.stringify(DB)); delete d._rev;
+  if(!d.students||!Array.isArray(d.students)){ toast("导出失败：数据格式异常（缺少学员列表）","err"); return; }
+  try{ download("data.json", JSON.stringify(d,null,2), "application/json"); }catch(e){ toast("导出失败："+e.message,"err"); return; }
+  toast("已导出 data.json（含全部数据）✓ 上传到网页目录覆盖旧文件；GitHub 用户请再点一次「更新部署」","ok");
+}
+function serverPush(){
+  if(!SERVER) return;
+  if(SERVER.edit===false){
+    if(!SERVER.keyAsked){ SERVER.keyAsked=true; serverAskKey(); }
+    return;
+  }
+  clearTimeout(SERVER_PUSH_T);
+  SERVER_PUSH_T=setTimeout(async()=>{
+    try{
+      const r=await fetch("/api/data",{method:"POST",headers:{"Content-Type":"application/json",...(SERVER.key?{"X-Edit-Key":SERVER.key}:{})},body:JSON.stringify(DB)});
+      if(r.status===403){ SERVER.edit=false; toast("写入被拒绝：录入口令错误或未配置","err"); return; }
+      if(!r.ok){ toast("服务器保存失败 HTTP "+r.status+"（数据已存本机缓存）","err"); return; }
+      const j=await r.json().catch(()=>null);
+      if(j&&j.rev){ SERVER_REV=j.rev; DIRTY=0; refreshPublishBtn(); try{ localStorage.setItem(LS_KEY+"_svr_at", nowTxt()); }catch(e){} }
+    }catch(e){ toast("无法连接服务器（数据已存本机缓存）","err"); }
+  },300);
+}
+function serverAskKey(){
+  openModal(`
+    <div class="mhd"><h3>🔑 服务器录入口令</h3><button class="xbtn" onclick="maskClose()">×</button></div>
+    <div class="mbd">
+      <p style="line-height:2;font-size:14px">当前为<b>只读模式</b>：数据由服务器统一管理。<br>如需录入/修改数据，请输入服务器录入口令（默认在 server.py 的 EDIT_KEY 中配置，仅本机保存一次）：</p>
+      <input id="sv_key_input" type="password" placeholder="录入口令" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid var(--line);border-radius:6px">
+      <div class="note" style="margin-top:10px">同事查看数据不需要口令；忘记口令可查看 server.py 顶部 EDIT_KEY。</div>
+    </div>
+    <div class="mft">
+      <button class="btn ghost" onclick="maskClose()">取消</button>
+      <button class="btn ember" onclick="serverSubmitKey()">确认并重试保存</button>
+    </div>`);
+  setTimeout(()=>{ const el=document.getElementById("sv_key_input"); if(el) el.focus(); },50);
+}
+function serverSubmitKey(){
+  const el=document.getElementById("sv_key_input");
+  const k=(el&&el.value||"").trim();
+  if(!k) return toast("请输入口令","err");
+  try{ localStorage.setItem(SVR_KEY_STORE,k); }catch(e){}
+  SERVER.key=k; SERVER.keyAsked=false; SERVER.edit=true;
+  serverPush();
+  toast("已保存口令，正在重试保存…","ok");
+}
+function serverSaveKey(){
+  const k=((document.getElementById("sv_key")||{}).value||"").trim();
+  try{ localStorage.setItem(SVR_KEY_STORE,k); }catch(e){}
+  if(SERVER){ SERVER.key=k; SERVER.keyAsked=false; }
+  serverTest();
+}
+async function serverTest(){
+  const st=document.getElementById("sv_state");
+  const set=t=>{ if(st) st.innerHTML=t; };
+  if(!SERVER){ set("当前为单机模式（未检测到服务器，请在本机运行 server.py 后刷新）"); return; }
+  set("正在检测…");
+  try{
+    const r=await fetch("/api/info",{headers:SERVER.key?{"X-Edit-Key":SERVER.key}:{}});
+    const info=await r.json().catch(()=>null);
+    if(info&&info.mode==="server"){
+      SERVER.edit=!!info.edit;
+      set("服务器连接正常（"+SERVER.host+"）· "+ (SERVER.edit?"✅ 可录入（已配置口令）":"只读（未配置录入口令）") +" · 数据版本 rev "+info.rev);
+      try{ if(typeof renderNav==="function") renderNav(); }catch(e){}
+    }else{ set("连接失败：服务器返回异常"); }
+  }catch(e){ set("连接失败："+e.message); }
+}
+async function serverPullNow(){
+  if(!SERVER){ toast("未检测到服务器","err"); return; }
+  try{
+    const r=await fetch("/api/data");
+    if(!r.ok) return toast("服务器暂无数据（请先在服务器端录入一次）","err");
+    const d=await r.json();
+    if(d&&d.students) applyServerData(d);
+  }catch(e){ toast("拉取失败："+e.message,"err"); }
+}
 /* ---------------- 启动 ---------------- */
-DB=loadDB()||defaultDB();
-if(!DB.org) DB.org={name:"青禾营地",amountThreshold:500,operator:"教务老师"};
+function bootApp(){
+DB=DB||loadDB()||defaultDB();
+try{ PUBLISH_MODE=localStorage.getItem(PUBLISH_KEY)==="auto"?"auto":"manual"; }catch(e){}
+if(!DB.org) DB.org={name:"",amountThreshold:500,operator:"教务老师"};
 if(!DB.users||!DB.users.length) DB.users=defaultDB().users;      // 旧数据补账号
 if(!DB.customFields) DB.customFields=[];                          // 旧数据补自定义字段
 if(DB.org.phoneMask==null) DB.org.phoneMask=true;                 // 旧数据补掩码开关
 if(DB.org.amountThreshold==null) DB.org.amountThreshold=500;      // 旧数据补金额预警阈值（元）
-if(restoreSession()){
-  renderNav();
-  renderPage();
-}else{
-  renderLogin();
-}
-// 云端同步：启动后自动拉取最新（已配置自动同步时）
-(function(){
-  const sc=syncConfig();
-  if(sc.auto&&sc.url&&sc.user&&sc.pass) setTimeout(()=>webdavPull(),900);
-})();
+renderNav();
+renderPage();
 // 书签直达：地址栏支持 #dash / #students / #products / #finance / #classes / #invites / #reports / #settings
 (function(){
   const TABS=["dash","students","products","finance","classes","invites","reports","settings"];
@@ -2351,6 +2571,9 @@ if(!localStorage.getItem("campedu_seen_v1") && DB.students.length===0){
       <div class="mft"><button class="btn ember" onclick="maskClose()">开始使用</button></div>`);
   },600);
 }
+}
+// 先探测局域网服务器（有则用服务器数据并开启实时同步），再启动界面
+initServerMode().then(bootApp);
 </script>
 </body>
 </html>
