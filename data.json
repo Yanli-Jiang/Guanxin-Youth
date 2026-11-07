@@ -1,1 +1,933 @@
-{_  _org__ {_    _name__ _观心少年_,_    _threshold__ 1,_    _operator__ _管理员_,_    _phoneMask__ true,_    _amountThreshold__ 5000_  },_  _students__ [_    {_      _name__ _林小满_,_      _phone__ _13800001001_,_      _gender__ _女_,_      _birthday_.00（微信）_,_   .00（微信）_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-03 18_19_,_      _op__ _新增套餐_,_      _detail__ _青春复元_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-03 18_18_,_      _op__ _新增单品_,_      _detail__ _未来幻境_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-03 18_17_,_      _op__ _新增单品_,_      _detail__ _未来之翼_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-03 18_02_,_      _op__ _设置_,_      _detail__ _机构设置已更新_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-03 17_42_,_      _op__ _设置_,_      _detail__ _机构设置已更新_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-02 18_31_,_      _op__ _设置_,_      _detail__ _机构设置已更新_,_      _operator__ _管理员__    },_    {_      _time__ _2026-11-02 18_29_,_      _op__ _系统_,_      _detail__ _载入演示数据（含美术+书法套餐课消验收场景）_,_      _operator__ _教务老师__    }_  ],_  _createdAt__ _2026-11-02 18_29_,_  _users__ [_    {_      _username__ _admin_,_      _password__ _123456_,_      _name__ _管理员_,_      _role__ _admin__    },_    {_      _username__ _xiaozhang_,_      _password__ _123456_,_      _name__ _校长_,_      _role__ _principal__    },_    {_      _username__ _caiwu_,_      _password__ _123456_,_      _name__ _财务_,_      _role__ _cashier__    },_    {_      _username__ _jiaowu_,_      _password__ _123456_,_      _name__ _教务_,_      _role__ _teacher__    }_  ],_  _customFields__ []_}
+{
+  "org": {
+    "name": "观心少年",
+    "threshold": 1,
+    "operator": "管理员",
+    "phoneMask": true,
+    "amountThreshold": 5000
+  },
+  "students": [
+    {
+      "name": "林小满",
+      "phone": "13800001001",
+      "gender": "女",
+      "birthday": "2013-04-12",
+      "school": "阳光小学",
+      "grade": "四年级",
+      "source": "老带新",
+      "note": "过敏体质",
+      "id": "st1",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "name": "陈一诺",
+      "phone": "13800001002",
+      "gender": "男",
+      "birthday": "2012-09-03",
+      "school": "阳光小学",
+      "grade": "五年级",
+      "source": "地推",
+      "note": "",
+      "id": "st2",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "name": "周子轩",
+      "phone": "13800001003",
+      "gender": "男",
+      "birthday": "2014-02-25",
+      "school": "星火小学",
+      "grade": "三年级",
+      "source": "公众号",
+      "note": "",
+      "id": "st3",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "name": "许知夏",
+      "phone": "13800001004",
+      "gender": "女",
+      "birthday": "2013-11-08",
+      "school": "星火小学",
+      "grade": "四年级",
+      "source": "转介绍",
+      "note": "喜欢攀岩",
+      "id": "st4",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "name": "郑沐阳",
+      "phone": "13800001005",
+      "gender": "男",
+      "birthday": "2012-06-17",
+      "school": "阳光小学",
+      "grade": "五年级",
+      "source": "地推",
+      "note": "",
+      "id": "st5",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "name": "顾言蹊",
+      "phone": "13800001006",
+      "gender": "女",
+      "birthday": "2014-08-30",
+      "school": "星火小学",
+      "grade": "三年级",
+      "source": "老带新",
+      "note": "",
+      "id": "st6",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "name": "宋安澜",
+      "phone": "13800001007",
+      "gender": "男",
+      "birthday": "2013-01-19",
+      "school": "阳光小学",
+      "grade": "四年级",
+      "source": "公众号",
+      "note": "余课<3，需续费",
+      "id": "st7",
+      "createdAt": "2026-11-02 18:29"
+    }
+  ],
+  "singles": [
+    {
+      "id": "sg1",
+      "name": "创意美术",
+      "subject": "美术",
+      "listPrice": 1200,
+      "totalLessons": 30,
+      "validity": 6,
+      "note": "含材料费",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "sg2",
+      "name": "硬笔书法",
+      "subject": "书法",
+      "listPrice": 1200,
+      "totalLessons": 30,
+      "validity": 6,
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "sg3",
+      "name": "营地攀岩",
+      "subject": "运动",
+      "listPrice": 1500,
+      "totalLessons": 20,
+      "validity": 3,
+      "note": "含装备与保险",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "sg4",
+      "name": "自然观察",
+      "subject": "自然",
+      "listPrice": 1200,
+      "totalLessons": 20,
+      "validity": 3,
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "sg5",
+      "name": "少儿编程",
+      "subject": "编程",
+      "listPrice": 1800,
+      "totalLessons": 24,
+      "validity": 6,
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "mw0jaz6cv5uy585",
+      "name": "未来之翼",
+      "subject": "营地",
+      "listPrice": 19800,
+      "totalLessons": 1,
+      "validity": 6,
+      "note": "",
+      "createdAt": "2026-11-03 18:17"
+    },
+    {
+      "id": "mw0jbk08i79r2kh",
+      "name": "未来幻境",
+      "subject": "营地",
+      "listPrice": 19800,
+      "totalLessons": 1,
+      "validity": 6,
+      "note": "",
+      "createdAt": "2026-11-03 18:18"
+    }
+  ],
+  "combos": [
+    {
+      "id": "cb1",
+      "name": "美术+书法联报",
+      "price": 3000,
+      "items": [
+        {
+          "singleId": "sg1",
+          "lessons": 30,
+          "amount": 1500
+        },
+        {
+          "singleId": "sg2",
+          "lessons": 30,
+          "amount": 1500
+        }
+      ],
+      "createdAt": "2026-11-02 18:29",
+      "note": "对应PRD验收场景：总价3000元，各30课时、各拆1500元"
+    },
+    {
+      "id": "cb2",
+      "name": "运动+自然联报",
+      "price": 2160,
+      "items": [
+        {
+          "singleId": "sg3",
+          "lessons": 20,
+          "amount": 1200
+        },
+        {
+          "singleId": "sg4",
+          "lessons": 20,
+          "amount": 960
+        }
+      ],
+      "createdAt": "2026-11-02 18:29",
+      "note": "攀岩原价1500×0.8"
+    },
+    {
+      "id": "mw0jdbn65t6v5kw",
+      "name": "青春复元",
+      "price": 29800,
+      "items": [
+        {
+          "singleId": "mw0jaz6cv5uy585",
+          "lessons": 1,
+          "amount": 14900
+        },
+        {
+          "singleId": "mw0jbk08i79r2kh",
+          "lessons": 1,
+          "amount": 14900
+        },
+        {
+          "singleId": "sg1",
+          "lessons": 1,
+          "amount": 0
+        }
+      ],
+      "note": "",
+      "createdAt": "2026-11-03 18:19"
+    }
+  ],
+  "payments": [
+    {
+      "id": "p1",
+      "studentId": "st1",
+      "type": "combo",
+      "productId": "cb1",
+      "name": "美术+书法联报",
+      "amount": 300000,
+      "items": [
+        {
+          "unitKey": "C:cb1:sg1",
+          "unitName": "美术+书法联报·创意美术",
+          "lessons": 30,
+          "amount": 150000
+        },
+        {
+          "unitKey": "C:cb1:sg2",
+          "unitName": "美术+书法联报·硬笔书法",
+          "lessons": 30,
+          "amount": 150000
+        }
+      ],
+      "method": "微信",
+      "date": "2026-11-02",
+      "operator": "教务老师",
+      "note": "开营大礼包",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p2",
+      "studentId": "st1",
+      "type": "single",
+      "productId": "sg3",
+      "name": "营地攀岩",
+      "amount": 150000,
+      "items": [
+        {
+          "unitKey": "S:sg3",
+          "unitName": "营地攀岩",
+          "lessons": 20,
+          "amount": 150000
+        }
+      ],
+      "method": "微信",
+      "date": "2026-11-02",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p3",
+      "studentId": "st2",
+      "type": "single",
+      "productId": "sg1",
+      "name": "创意美术",
+      "amount": 120000,
+      "items": [
+        {
+          "unitKey": "S:sg1",
+          "unitName": "创意美术",
+          "lessons": 30,
+          "amount": 120000
+        }
+      ],
+      "method": "支付宝",
+      "date": "2026-11-02",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p4",
+      "studentId": "st3",
+      "type": "single",
+      "productId": "sg3",
+      "name": "营地攀岩",
+      "amount": 150000,
+      "items": [
+        {
+          "unitKey": "S:sg3",
+          "unitName": "营地攀岩",
+          "lessons": 20,
+          "amount": 150000
+        }
+      ],
+      "method": "现金",
+      "date": "2026-11-02",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p5",
+      "studentId": "st4",
+      "type": "combo",
+      "productId": "cb2",
+      "name": "运动+自然联报",
+      "amount": 216000,
+      "items": [
+        {
+          "unitKey": "C:cb2:sg3",
+          "unitName": "运动+自然联报·营地攀岩",
+          "lessons": 20,
+          "amount": 120000
+        },
+        {
+          "unitKey": "C:cb2:sg4",
+          "unitName": "运动+自然联报·自然观察",
+          "lessons": 20,
+          "amount": 96000
+        }
+      ],
+      "method": "转账",
+      "date": "2026-10-28",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p6",
+      "studentId": "st5",
+      "type": "single",
+      "productId": "sg2",
+      "name": "硬笔书法",
+      "amount": 120000,
+      "items": [
+        {
+          "unitKey": "S:sg2",
+          "unitName": "硬笔书法",
+          "lessons": 30,
+          "amount": 120000
+        }
+      ],
+      "method": "微信",
+      "date": "2026-10-23",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p7",
+      "studentId": "st6",
+      "type": "single",
+      "productId": "sg1",
+      "name": "创意美术",
+      "amount": 120000,
+      "items": [
+        {
+          "unitKey": "S:sg1",
+          "unitName": "创意美术",
+          "lessons": 30,
+          "amount": 120000
+        }
+      ],
+      "method": "微信",
+      "date": "2026-10-25",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "p8",
+      "studentId": "st7",
+      "type": "single",
+      "productId": "sg3",
+      "name": "营地攀岩",
+      "amount": 150000,
+      "items": [
+        {
+          "unitKey": "S:sg3",
+          "unitName": "营地攀岩",
+          "lessons": 20,
+          "amount": 150000
+        }
+      ],
+      "method": "微信",
+      "date": "2026-10-21",
+      "operator": "教务老师",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "mw0jeccb4kcqhig",
+      "studentId": "st1",
+      "type": "combo",
+      "productId": "mw0jdbn65t6v5kw",
+      "name": "青春复元",
+      "amount": 2980000,
+      "items": [
+        {
+          "unitKey": "C:mw0jdbn65t6v5kw:mw0jaz6cv5uy585",
+          "unitName": "青春复元·未来之翼",
+          "lessons": 1,
+          "amount": 1490000
+        },
+        {
+          "unitKey": "C:mw0jdbn65t6v5kw:mw0jbk08i79r2kh",
+          "unitName": "青春复元·未来幻境",
+          "lessons": 1,
+          "amount": 1490000
+        },
+        {
+          "unitKey": "C:mw0jdbn65t6v5kw:sg1",
+          "unitName": "青春复元·创意美术",
+          "lessons": 1,
+          "amount": 0
+        }
+      ],
+      "method": "微信",
+      "date": "2026-11-03",
+      "operator": "管理员",
+      "note": "订单号：11111111111",
+      "createdAt": "2026-11-03 18:20"
+    }
+  ],
+  "refunds": [
+    {
+      "id": "mw4g0joual1obya",
+      "studentId": "st1",
+      "unitKey": "C:cb1:sg1",
+      "unitName": "美术+书法联报·创意美术",
+      "lessons": 29,
+      "cancelAmount": 145000,
+      "amount": 145000,
+      "fee": 0,
+      "otherFee": 0,
+      "reason": "",
+      "note": "",
+      "status": "approved",
+      "method": "微信",
+      "date": "2026-11-06",
+      "sales": "",
+      "orderNo": "",
+      "campus": "",
+      "operator": "管理员",
+      "createdAt": "2026-11-06 11:56",
+      "approvedAt": "2026-11-06 11:56"
+    },
+    {
+      "id": "mw4g1d8eclztnma",
+      "studentId": "st1",
+      "unitKey": "C:cb1:sg2",
+      "unitName": "美术+书法联报·硬笔书法",
+      "lessons": 30,
+      "cancelAmount": 150000,
+      "amount": 150000,
+      "fee": 0,
+      "otherFee": 0,
+      "reason": "",
+      "note": "",
+      "status": "approved",
+      "method": "微信",
+      "date": "2026-11-06",
+      "sales": "",
+      "orderNo": "",
+      "campus": "",
+      "operator": "管理员",
+      "createdAt": "2026-11-06 11:57",
+      "approvedAt": "2026-11-06 11:57"
+    },
+    {
+      "id": "mw4g1pmo3bbxd3p",
+      "studentId": "st1",
+      "unitKey": "S:sg3",
+      "unitName": "营地攀岩",
+      "lessons": 20,
+      "cancelAmount": 150000,
+      "amount": 150000,
+      "fee": 0,
+      "otherFee": 0,
+      "reason": "",
+      "note": "",
+      "status": "approved",
+      "method": "微信",
+      "date": "2026-11-06",
+      "sales": "",
+      "orderNo": "",
+      "campus": "",
+      "operator": "管理员",
+      "createdAt": "2026-11-06 11:57",
+      "approvedAt": "2026-11-06 11:57"
+    },
+    {
+      "id": "mw4g2b0csq2ceel",
+      "studentId": "st1",
+      "unitKey": "C:mw0jdbn65t6v5kw:mw0jbk08i79r2kh",
+      "unitName": "青春复元·未来幻境",
+      "lessons": 1,
+      "cancelAmount": 1490000,
+      "amount": 1490000,
+      "fee": 0,
+      "otherFee": 0,
+      "reason": "",
+      "note": "",
+      "status": "approved",
+      "method": "微信",
+      "date": "2026-11-06",
+      "sales": "",
+      "orderNo": "",
+      "campus": "",
+      "operator": "管理员",
+      "createdAt": "2026-11-06 11:58",
+      "approvedAt": "2026-11-06 11:58"
+    }
+  ],
+  "consumptions": [
+    {
+      "id": "cs1",
+      "studentId": "st1",
+      "unitKey": "C:cb1:sg1",
+      "unitName": "美术+书法联报·创意美术",
+      "lessons": 1,
+      "amount": 5000,
+      "date": "2026-10-26",
+      "source": "attendance",
+      "classId": "c1",
+      "operator": "教务老师",
+      "note": "考勤自动消课（1500元÷30节=50元/节）",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "mw0jev7au99m8gw",
+      "studentId": "st1",
+      "unitKey": "C:mw0jdbn65t6v5kw:mw0jaz6cv5uy585",
+      "unitName": "青春复元·未来之翼",
+      "lessons": 1,
+      "amount": 1490000,
+      "date": "2026-11-03",
+      "source": "manual",
+      "classId": "",
+      "operator": "管理员",
+      "note": "",
+      "createdAt": "2026-11-03 18:20"
+    }
+  ],
+  "classes": [
+    {
+      "id": "c1",
+      "name": "周六美术营·A班",
+      "unitKey": "C:cb1:sg1",
+      "unitName": "美术+书法联报·创意美术",
+      "date": "2026-10-26",
+      "start": "10:00",
+      "end": "12:00",
+      "teacher": "桃子老师",
+      "location": "营地艺术工坊",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "c2",
+      "name": "营地攀岩·A班",
+      "unitKey": "S:sg3",
+      "unitName": "营地攀岩",
+      "date": "2026-11-02",
+      "start": "09:00",
+      "end": "10:30",
+      "teacher": "大熊老师",
+      "location": "营地岩壁区",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "c3",
+      "name": "创意美术·A班",
+      "unitKey": "C:cb1:sg1",
+      "unitName": "创意美术",
+      "date": "2026-11-02",
+      "start": "15:00",
+      "end": "17:00",
+      "teacher": "桃子老师",
+      "location": "营地艺术工坊",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "c4",
+      "name": "创意美术·A班",
+      "unitKey": "S:sg1",
+      "unitName": "创意美术",
+      "date": "2026-11-03",
+      "start": "09:00",
+      "end": "11:00",
+      "teacher": "桃子老师",
+      "location": "营地艺术工坊",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    },
+    {
+      "id": "c5",
+      "name": "营地攀岩·A班",
+      "unitKey": "S:sg3",
+      "unitName": "营地攀岩",
+      "date": "2026-11-03",
+      "start": "15:00",
+      "end": "16:30",
+      "teacher": "大熊老师",
+      "location": "营地岩壁区",
+      "note": "",
+      "createdAt": "2026-11-02 18:29"
+    }
+  ],
+  "invites": [
+    {
+      "id": "iv1",
+      "classId": "c1",
+      "studentId": "st1",
+      "status": "已到课",
+      "message": "",
+      "time": "2026-11-02 18:29"
+    },
+    {
+      "id": "mvz4ao9nmujuz09",
+      "classId": "c2",
+      "studentId": "st1",
+      "status": "已确认",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9ne4xemhk",
+      "classId": "c2",
+      "studentId": "st3",
+      "status": "已邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9ndw048ob",
+      "classId": "c2",
+      "studentId": "st7",
+      "status": "已邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9o6fe3pod",
+      "classId": "c3",
+      "studentId": "st1",
+      "status": "已邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9onkg9chp",
+      "classId": "c4",
+      "studentId": "st2",
+      "status": "未邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9ovvx9pq8",
+      "classId": "c4",
+      "studentId": "st6",
+      "status": "未邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9ojeqnj1o",
+      "classId": "c5",
+      "studentId": "st1",
+      "status": "未邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9ouhj0w3n",
+      "classId": "c5",
+      "studentId": "st3",
+      "status": "未邀约",
+      "message": "",
+      "time": ""
+    },
+    {
+      "id": "mvz4ao9ovibnok1",
+      "classId": "c5",
+      "studentId": "st7",
+      "status": "未邀约",
+      "message": "",
+      "time": ""
+    }
+  ],
+  "logs": [
+    {
+      "time": "2026-11-06 12:17",
+      "op": "设置",
+      "detail": "机构设置已更新",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:58",
+      "op": "退费审核通过",
+      "detail": "林小满 「青春复元·未来幻境」退 ¥14,900.00（红字回滚课时1节）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:58",
+      "op": "退费申请",
+      "detail": "林小满 「青春复元·未来幻境」申请退 ¥14,900.00（手续费¥0.00）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:57",
+      "op": "退费审核通过",
+      "detail": "林小满 「营地攀岩」退 ¥1,500.00（红字回滚课时20节）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:57",
+      "op": "退费申请",
+      "detail": "林小满 「营地攀岩」申请退 ¥1,500.00（手续费¥0.00）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:57",
+      "op": "退费审核通过",
+      "detail": "林小满 「美术+书法联报·硬笔书法」退 ¥1,500.00（红字回滚课时30节）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:57",
+      "op": "退费申请",
+      "detail": "林小满 「美术+书法联报·硬笔书法」申请退 ¥1,500.00（手续费¥0.00）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:56",
+      "op": "退费审核通过",
+      "detail": "林小满 「美术+书法联报·创意美术」退 ¥1,450.00（红字回滚课时29节）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:56",
+      "op": "退费申请",
+      "detail": "林小满 「美术+书法联报·创意美术」申请退 ¥1,450.00（手续费¥0.00）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:51",
+      "op": "登录",
+      "detail": "管理员（管理员）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:51",
+      "op": "退出登录",
+      "detail": "教务",
+      "operator": "教务",
+      "role": "教务老师",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:50",
+      "op": "登录",
+      "detail": "教务（教务老师）",
+      "operator": "教务",
+      "role": "教务老师",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:50",
+      "op": "退出登录",
+      "detail": "校长",
+      "operator": "校长",
+      "role": "校长",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:50",
+      "op": "登录",
+      "detail": "校长（校长）",
+      "operator": "校长",
+      "role": "校长",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:49",
+      "op": "退出登录",
+      "detail": "管理员",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-06 11:14",
+      "op": "登录",
+      "detail": "管理员（管理员）",
+      "operator": "管理员",
+      "role": "管理员",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-03 18:43",
+      "op": "邀约",
+      "detail": "林小满 「营地攀岩·A班」→ 已确认",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 18:20",
+      "op": "课消",
+      "detail": "林小满 「青春复元·未来之翼」消1节 ¥14,900.00（手动）",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 18:20",
+      "op": "收费",
+      "detail": "林小满 报读「青春复元」¥29,800.00（微信）",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 18:19",
+      "op": "新增套餐",
+      "detail": "青春复元",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 18:18",
+      "op": "新增单品",
+      "detail": "未来幻境",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 18:17",
+      "op": "新增单品",
+      "detail": "未来之翼",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 18:02",
+      "op": "设置",
+      "detail": "机构设置已更新",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-03 17:42",
+      "op": "设置",
+      "detail": "机构设置已更新",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-02 18:31",
+      "op": "设置",
+      "detail": "机构设置已更新",
+      "operator": "管理员"
+    },
+    {
+      "time": "2026-11-02 18:29",
+      "op": "系统",
+      "detail": "载入演示数据（含美术+书法套餐课消验收场景）",
+      "operator": "教务老师"
+    }
+  ],
+  "createdAt": "2026-11-02 18:29",
+  "users": [
+    {
+      "username": "admin",
+      "password": "123456",
+      "name": "管理员",
+      "role": "admin"
+    },
+    {
+      "username": "xiaozhang",
+      "password": "123456",
+      "name": "校长",
+      "role": "principal"
+    },
+    {
+      "username": "caiwu",
+      "password": "123456",
+      "name": "财务",
+      "role": "cashier"
+    },
+    {
+      "username": "jiaowu",
+      "password": "123456",
+      "name": "教务",
+      "role": "teacher"
+    }
+  ],
+  "customFields": []
+}
