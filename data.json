@@ -531,6 +531,50 @@
       "operator": "管理员",
       "createdAt": "2026-11-06 11:58",
       "approvedAt": "2026-11-06 11:58"
+    },
+    {
+      "id": "mw69vcupwbuxcdv",
+      "studentId": "st2",
+      "unitKey": "S:sg1",
+      "unitName": "创意美术",
+      "lessons": 30,
+      "cancelAmount": 120000,
+      "amount": 120000,
+      "fee": 0,
+      "otherFee": 0,
+      "reason": "",
+      "note": "",
+      "status": "approved",
+      "method": "微信",
+      "date": "2026-11-07",
+      "sales": "",
+      "orderNo": "",
+      "campus": "",
+      "operator": "管理员",
+      "createdAt": "2026-11-07 18:40",
+      "approvedAt": "2026-11-07 18:40"
+    },
+    {
+      "id": "mw69vs1yjiih3cc",
+      "studentId": "st3",
+      "unitKey": "S:sg3",
+      "unitName": "营地攀岩",
+      "lessons": 20,
+      "cancelAmount": 150000,
+      "amount": 150000,
+      "fee": 0,
+      "otherFee": 0,
+      "reason": "",
+      "note": "",
+      "status": "approved",
+      "method": "微信",
+      "date": "2026-11-07",
+      "sales": "",
+      "orderNo": "",
+      "campus": "",
+      "operator": "管理员",
+      "createdAt": "2026-11-07 18:40",
+      "approvedAt": "2026-11-07 18:40"
     }
   ],
   "consumptions": [
@@ -713,6 +757,38 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-11-07 18:40",
+      "op": "退费审核通过",
+      "detail": "周子轩 「营地攀岩」退 ¥1,500.00（红字回滚课时20节）",
+      "operator": "管理员",
+      "role": "",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-07 18:40",
+      "op": "退费申请",
+      "detail": "周子轩 「营地攀岩」申请退 ¥1,500.00（手续费¥0.00）",
+      "operator": "管理员",
+      "role": "",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-07 18:40",
+      "op": "退费审核通过",
+      "detail": "陈一诺 「创意美术」退 ¥1,200.00（红字回滚课时30节）",
+      "operator": "管理员",
+      "role": "",
+      "ip": "本机"
+    },
+    {
+      "time": "2026-11-07 18:40",
+      "op": "退费申请",
+      "detail": "陈一诺 「创意美术」申请退 ¥1,200.00（手续费¥0.00）",
+      "operator": "管理员",
+      "role": "",
+      "ip": "本机"
+    },
     {
       "time": "2026-11-06 12:17",
       "op": "设置",
